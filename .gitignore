@@ -1,0 +1,11 @@
+# Ignore environment variables
+.env
+
+# Ignore local dependencies and cache
+node_modules/
+dist/
+.cache/
+.DS_Store
+
+# Ignore Netlify build artifacts
+.netlify/
