@@ -444,7 +444,7 @@
       Let’s Build Your Launch 🚀
     </h2>
     <p class="text-slate-300 max-w-2xl mb-8">
-      Tell us about your idea — we’ll map out your tailored plan and next steps within 48 hours.
+      Tell us about your idea — our AI assistant will ask a few smart questions before we prepare your plan.
     </p>
 
     <div class="grid md:grid-cols-2 gap-10">
@@ -454,9 +454,9 @@
         <div class="relative z-10">
           <h4 class="font-semibold text-white mb-4 text-lg">What to Expect</h4>
           <ul class="text-slate-300 text-sm space-y-3">
-            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">⏱️</span> 20-minute discovery call or email</li>
-            <li class="flex items-start gap-2"><span class="text-[#1877F2]">📋</span> Quick validation checklist</li>
-            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">🧭</span> Launch roadmap & quote within 48 hours</li>
+            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">🤖</span> AI-powered intake to gather details</li>
+            <li class="flex items-start gap-2"><span class="text-[#1877F2]">📋</span> Quick roadmap & quote within 48 hours</li>
+            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">🧭</span> Personalized recommendations</li>
           </ul>
 
           <div class="mt-8 border-t border-white/10 pt-5">
@@ -533,6 +533,51 @@
     </div>
   </div>
 </section>
+
+<!-- CONTACT SCRIPT (AI-enhanced submission) -->
+<script>
+const form = document.getElementById('contactForm');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(form));
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.textContent = "Analyzing... 🤖";
+
+  try {
+    const res = await fetch("/.netlify/functions/ai-intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if (result.questions && result.questions.length > 0) {
+      for (let q of result.questions) {
+        const a = prompt(q);
+        if (a) data[`followup_${q}`] = a;
+      }
+    }
+
+    data.ai_summary = result.summary || "";
+
+    await fetch(form.action, {
+      method: "POST",
+      headers: { "Accept": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    form.classList.add('hidden');
+    document.getElementById('contactThanks').classList.remove('hidden');
+
+  } catch (err) {
+    alert("AI intake failed — submitting normally.");
+    form.submit();
+  }
+});
+</script>
+
 
     <footer class="mt-12 mb-12 text-slate-400 text-sm text-center">
       <div>© HyperLaunch — We Build What You Imagine.</div>
