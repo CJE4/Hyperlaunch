@@ -3,30 +3,28 @@ import OpenAI from "openai";
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function handler(event) {
-  const data = JSON.parse(event.body);
+  try {
+    const { message } = JSON.parse(event.body || "{}");
 
-  const prompt = `
-You are an AI assistant for HyperLaunch. Summarize this client's message and ask up to 3 short, helpful follow-up questions that would help prepare a project quote.
+    // Chat memory can be added later — for now, simple one-turn
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are HyperLaunch’s AI assistant. Ask questions to help gather details about new client projects (e.g., goals, timeline, design style, budget)." },
+        { role: "user", content: message }
+      ],
+    });
 
-Client submission:
-${JSON.stringify(data, null, 2)}
-
-Return JSON like:
-{
-  "summary": "summary here",
-  "questions": ["question1", "question2", "question3"]
-}
-`;
-
-  const completion = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [{ role: "user", content: prompt }]
-  });
-
-  const reply = completion.choices[0].message.content;
-  return {
-    statusCode: 200,
-    headers: { "Content-Type": "application/json" },
-    body: reply
-  };
+    const reply = completion.choices[0].message.content;
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ reply }),
+    };
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Server error" }),
+    };
+  }
 }
