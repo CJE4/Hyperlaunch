@@ -1,3 +1,4 @@
+// netlify/functions/ai-intake.js
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -9,23 +10,32 @@ export const handler = async (event) => {
     const body = JSON.parse(event.body || "{}");
     const message = body.message || "";
     const history = body.history || [];
+    const service = body.service || "";
+    const project = body.project || "";
+    const name = body.name || "";
+    const email = body.email || "";
 
-    // System prompt: make the bot a structured intake assistant
+    // System role: friendly intake assistant
     const systemPrompt = `
-      You are HyperLaunch Assistant 🚀 — an AI intake bot that helps new clients describe their web or brand project.
-      Your goal is to collect all important details step-by-step:
-      1. Brand name & idea
-      2. Audience
-      3. Main goal
-      4. Pages or features
-      5. Visual style
-      6. Timeline or budget
+You are HyperLaunch Assistant 🚀 — a friendly AI intake bot that helps new clients describe their project.
+Ask thoughtful, short questions about:
+1. Brand name or idea
+2. Target audience
+3. Project goals or challenges
+4. Pages/features they want (e.g., Home, Shop, Contact)
+5. Design preferences (colors, tone, vibe)
+6. Timeline or urgency
 
-      After each user reply, ask the next question until all are answered.
-      Be conversational, short, and friendly.
-      Once all details are collected, summarize everything clearly for the user.
+If you already have enough info, summarize the full project in 3–6 sentences clearly for the business owner.
+Keep a helpful, upbeat tone.
+Return structured data like:
+{
+  "reply": "...",
+  "summary": "..."
+}
     `;
 
+    // Chat with OpenAI
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -33,17 +43,35 @@ export const handler = async (event) => {
         ...history,
         { role: "user", content: message },
       ],
-      temperature: 0.7,
+      temperature: 0.8,
     });
 
-    const reply = response.choices[0].message.content;
+    const reply = response.choices[0].message.content || "";
+
+    // Optional: ask the model for a project summary once there’s enough info
+    let summary = "";
+    if (history.length > 4) {
+      const summaryResponse = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "Summarize the user’s project idea, goals, and key details for the team in 3–6 sentences." },
+          ...history,
+          { role: "user", content: message },
+        ],
+        temperature: 0.5,
+      });
+      summary = summaryResponse.choices[0].message.content || "";
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({
+        reply,
+        summary,
+      }),
     };
   } catch (err) {
-    console.error("AI error:", err);
+    console.error("AI intake error:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "AI request failed" }),
