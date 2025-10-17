@@ -590,30 +590,34 @@ if (contactForm) {
 }
 </script>
 
-<!-- HyperLaunch AI Chat Assistant -->
+<!-- 🔹 HyperLaunch AI Chat Assistant -->
 <div id="ai-chat-launcher"
-  class="fixed bottom-6 right-6 bg-gradient-to-r from-[#1877F2] to-[#7A00FF] text-white p-4 rounded-full shadow-lg cursor-pointer hover:scale-105 transition">
+  class="fixed bottom-6 right-6 bg-gradient-to-r from-[#1877F2] to-[#7A00FF] text-white p-4 rounded-full shadow-lg cursor-pointer hover:scale-105 transition z-50">
   💬
 </div>
 
+<!-- Chat Modal -->
 <div id="ai-chat-modal"
-  class="fixed bottom-20 right-6 bg-[#0B0B15]/95 border border-[#7A00FF]/20 rounded-2xl w-80 max-h-[80vh] hidden flex flex-col shadow-2xl backdrop-blur-lg overflow-hidden">
-  <div class="flex justify-between items-center px-4 py-3 border-b border-[#7A00FF]/30">
+  class="fixed bottom-24 right-6 bg-[#0B0B15]/95 border border-[#7A00FF]/40 rounded-2xl w-96 max-h-[80vh] hidden flex flex-col shadow-2xl backdrop-blur-xl overflow-hidden z-50">
+  
+  <!-- Header -->
+  <div class="flex justify-between items-center px-4 py-3 border-b border-[#7A00FF]/30 bg-[#111122]/90">
     <h3 class="font-semibold text-white">HyperLaunch Assistant 🚀</h3>
     <button id="close-chat" class="text-slate-400 hover:text-white">✖</button>
   </div>
-  <div id="ai-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm"></div>
-  <form id="ai-chat-form" class="p-3 border-t border-[#7A00FF]/20 flex gap-2">
-    <input
-      id="ai-input"
-      type="text"
-      placeholder="Type your idea..."
-      class="flex-1 bg-transparent border border-[#7A00FF]/30 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-[#7A00FF]/40"
-    />
-    <button
-      type="submit"
-      class="bg-gradient-to-r from-[#1877F2] to-[#7A00FF] px-3 py-2 rounded-md text-white font-semibold">
-      Send
+
+  <!-- Messages -->
+  <div id="ai-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm text-slate-200">
+    <div class="text-slate-400 italic">👋 Hi! I’m your HyperLaunch Assistant. Tell me about your project idea!</div>
+  </div>
+
+  <!-- Input -->
+  <form id="ai-form" class="p-3 border-t border-[#7A00FF]/30 bg-[#111122]/80 flex gap-2">
+    <input id="ai-input" type="text" placeholder="Type your message..." 
+      class="flex-1 bg-transparent border border-[#7A00FF]/40 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-[#7A00FF]/40 focus:outline-none" />
+    <button type="submit"
+      class="bg-gradient-to-r from-[#1877F2] to-[#7A00FF] px-4 py-2 rounded-md text-white font-semibold hover:opacity-90 transition">
+      ➤
     </button>
   </form>
 </div>
@@ -622,31 +626,33 @@ if (contactForm) {
 const launcher = document.getElementById("ai-chat-launcher");
 const chatModal = document.getElementById("ai-chat-modal");
 const closeChat = document.getElementById("close-chat");
-const chatForm = document.getElementById("ai-chat-form");
-const input = document.getElementById("ai-input");
+const aiForm = document.getElementById("ai-form");
+const aiInput = document.getElementById("ai-input");
 const messages = document.getElementById("ai-messages");
 
 let chatHistory = [];
 
-launcher.addEventListener("click", () => chatModal.classList.toggle("hidden"));
-closeChat.addEventListener("click", () => chatModal.classList.add("hidden"));
+// Toggle modal visibility
+launcher.onclick = () => chatModal.classList.toggle("hidden");
+closeChat.onclick = () => chatModal.classList.add("hidden");
 
+// Function to add messages
 function addMessage(text, sender = "ai") {
   const msg = document.createElement("div");
-  msg.classList.add("px-3", "py-2", "rounded-lg", "max-w-[90%]", "whitespace-pre-wrap");
-  msg.classList.add(sender === "ai" ? "bg-[#11111A] text-slate-200 self-start" : "bg-[#7A00FF]/20 text-[#7A00FF] self-end");
+  msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
   msg.textContent = text;
   messages.appendChild(msg);
   messages.scrollTop = messages.scrollHeight;
 }
 
-chatForm.addEventListener("submit", async (e) => {
+// Handle chat submit
+aiForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const text = input.value.trim();
+  const text = aiInput.value.trim();
   if (!text) return;
 
   addMessage(text, "user");
-  input.value = "";
+  aiInput.value = "";
 
   try {
     const res = await fetch("/.netlify/functions/ai-intake", {
@@ -656,19 +662,21 @@ chatForm.addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
+
     if (data.reply) {
       chatHistory.push({ role: "user", content: text });
       chatHistory.push({ role: "assistant", content: data.reply });
       addMessage(data.reply, "ai");
     } else {
-      addMessage("⚠️ Sorry, something went wrong.", "ai");
+      addMessage("⚠️ Sorry, I had trouble responding. Please try again.");
     }
   } catch (err) {
-    console.error("Chat error:", err);
-    addMessage("⚠️ Error contacting AI server.", "ai");
+    console.error("AI chat error:", err);
+    addMessage("⚠️ Connection error — please try again.", "ai");
   }
 });
 </script>
+
 
 
 
