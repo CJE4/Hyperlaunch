@@ -4,55 +4,49 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function handler(event) {
+export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
+    const message = body.message || "";
+    const history = body.history || [];
 
-    const userInput =
-      body.message ||
-      `Service: ${body.service || "N/A"} | Project: ${body.project || "N/A"} | Name: ${body.name || "N/A"} | Email: ${body.email || "N/A"}`;
+    // System prompt: make the bot a structured intake assistant
+    const systemPrompt = `
+      You are HyperLaunch Assistant 🚀 — an AI intake bot that helps new clients describe their web or brand project.
+      Your goal is to collect all important details step-by-step:
+      1. Brand name & idea
+      2. Audience
+      3. Main goal
+      4. Pages or features
+      5. Visual style
+      6. Timeline or budget
 
-    const prompt = `
-You are the HyperLaunch intake assistant. The following text is from a potential client inquiry:
----
-${userInput}
----
-Summarize the most important information for a web design project:
-- Business or brand name
-- Goals or vision
-- Target audience
-- Timeline or urgency
-- Requested features or services
+      After each user reply, ask the next question until all are answered.
+      Be conversational, short, and friendly.
+      Once all details are collected, summarize everything clearly for the user.
+    `;
 
-Then, list 2–3 clear follow-up questions to help gather anything missing.
-
-Respond **only** in JSON, in this format:
-{
-  "summary": "Short summary here",
-  "questions": ["Question 1", "Question 2"]
-}
-`;
-
-    const completion = await client.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...history,
+        { role: "user", content: message },
+      ],
+      temperature: 0.7,
     });
 
-    const result = JSON.parse(completion.choices[0].message.content || "{}");
+    const reply = response.choices[0].message.content;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        summary: result.summary || "No summary generated.",
-        questions: result.questions || [],
-      }),
+      body: JSON.stringify({ reply }),
     };
   } catch (err) {
-    console.error("AI Intake Error:", err);
+    console.error("AI error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "AI processing failed." }),
+      body: JSON.stringify({ error: "AI request failed" }),
     };
   }
-}
+};
