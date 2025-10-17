@@ -1,80 +1,58 @@
-// netlify/functions/ai-intake.js
 import OpenAI from "openai";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const handler = async (event) => {
+export async function handler(event) {
   try {
     const body = JSON.parse(event.body || "{}");
-    const message = body.message || "";
-    const history = body.history || [];
+
+    const userInput =
+      body.message ||
+      `Service: ${body.service || "N/A"} | Project: ${body.project || "N/A"} | Name: ${body.name || "N/A"} | Email: ${body.email || "N/A"}`;
+
+    const prompt = `
+You are the HyperLaunch intake assistant. The following text is from a potential client inquiry:
+---
+${userInput}
+---
+Summarize the most important information for a web design project:
+- Business or brand name
+- Goals or vision
+- Target audience
+- Timeline or urgency
+- Requested features or services
+
+Then, list 2–3 clear follow-up questions to help gather anything missing.
+
+Respond **only** in JSON, in this format:
+{
+  "summary": "Short summary here",
+  "questions": ["Question 1", "Question 2"]
+}
+`;
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.8,
-      messages: [
-        {
-          role: "system",
-          content: `
-You are HyperLaunch AI — an expert brand launch assistant that gathers details about new projects for Connor (the web developer).
-Ask questions conversationally about:
-- brand name & story
-- target audience
-- style & color preferences
-- pages or features needed
-- budget/timeline
-- goals or challenges
-
-Once you believe you have all details, summarize them in **structured JSON** like:
-{
-  "name": "",
-  "email": "",
-  "brand": "",
-  "goals": "",
-  "style": "",
-  "pages": "",
-  "features": "",
-  "timeline": ""
-}
-
-Keep your tone warm, clear, and slightly energetic (like a launch coach 🚀). 
-End by confirming if they’d like to proceed to booking a consult or quote.`,
-        },
-        ...history,
-        { role: "user", content: message },
-      ],
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" },
     });
 
-    const reply = completion.choices[0].message.content;
-
-    // Automatically email the summary if JSON detected
-    if (reply && reply.includes("{") && reply.includes("}")) {
-      try {
-        await fetch("https://formspree.io/f/xnngoodr", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            _subject: "New HyperLaunch AI Intake",
-            message: reply,
-          }),
-        });
-      } catch (emailError) {
-        console.error("Formspree send failed:", emailError);
-      }
-    }
+    const result = JSON.parse(completion.choices[0].message.content || "{}");
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({
+        summary: result.summary || "No summary generated.",
+        questions: result.questions || [],
+      }),
     };
-  } catch (error) {
-    console.error("AI Intake Error:", error);
+  } catch (err) {
+    console.error("AI Intake Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Something went wrong." }),
+      body: JSON.stringify({ error: "AI processing failed." }),
     };
   }
-};
+}
