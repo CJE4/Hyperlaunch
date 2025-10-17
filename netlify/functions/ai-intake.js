@@ -1,77 +1,61 @@
-// netlify/functions/ai-intake.js
 import OpenAI from "openai";
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// A list of intake questions for structured one-by-one AI chat
+const intakeQuestions = [
+  "What’s your brand or project name?",
+  "Who’s your target audience?",
+  "What’s your main goal for this website or launch?",
+  "What pages or features would you like? (e.g., Home, About, Shop)",
+  "Do you have a specific visual style or colors in mind?",
+  "What’s your ideal timeline or budget range?",
+];
 
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
-    const message = body.message || "";
-    const history = body.history || [];
-    const service = body.service || "";
-    const project = body.project || "";
-    const name = body.name || "";
-    const email = body.email || "";
+    const { message, history = [] } = body;
 
-    // System role: friendly intake assistant
-    const systemPrompt = `
-You are HyperLaunch Assistant 🚀 — a friendly AI intake bot that helps new clients describe their project.
-Ask thoughtful, short questions about:
-1. Brand name or idea
-2. Target audience
-3. Project goals or challenges
-4. Pages/features they want (e.g., Home, Shop, Contact)
-5. Design preferences (colors, tone, vibe)
-6. Timeline or urgency
+    const messages = [
+      {
+        role: "system",
+        content: `
+          You are HyperLaunch Assistant 🚀 — a friendly and structured intake AI.
+          You help users describe their project step-by-step.
+          Ask **one question at a time** from this sequence:
+          ${intakeQuestions.join(", ")}.
+          When you’ve asked all questions and gathered enough info,
+          create a friendly summary of everything you learned.
+          Then ask:
+          "Would you like me to send this to HyperLaunch as your contact request?"
+          If they say yes, respond with:
+          "✅ Got it! I’ll send this to the team right away."
+        `,
+      },
+      ...history,
+      { role: "user", content: message },
+    ];
 
-If you already have enough info, summarize the full project in 3–6 sentences clearly for the business owner.
-Keep a helpful, upbeat tone.
-Return structured data like:
-{
-  "reply": "...",
-  "summary": "..."
-}
-    `;
-
-    // Chat with OpenAI
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...history,
-        { role: "user", content: message },
-      ],
+      messages,
       temperature: 0.8,
     });
 
-    const reply = response.choices[0].message.content || "";
+    const reply = response.choices[0].message.content;
 
-    // Optional: ask the model for a project summary once there’s enough info
-    let summary = "";
-    if (history.length > 4) {
-      const summaryResponse = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: "Summarize the user’s project idea, goals, and key details for the team in 3–6 sentences." },
-          ...history,
-          { role: "user", content: message },
-        ],
-        temperature: 0.5,
-      });
-      summary = summaryResponse.choices[0].message.content || "";
-    }
+    // Try to detect if AI produced a final summary
+    const isSummary = reply.toLowerCase().includes("would you like me to send this");
 
     return {
       statusCode: 200,
       body: JSON.stringify({
         reply,
-        summary,
+        isSummary,
       }),
     };
   } catch (err) {
-    console.error("AI intake error:", err);
+    console.error("AI error:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "AI request failed" }),

@@ -538,57 +538,38 @@
 </section>
 
     
-
-<!-- CONTACT SCRIPT (AI-enhanced submission) -->
+<!-- 🔹 CONTACT FORM + AI CHAT INTEGRATION -->
 <script>
-const contactForm = document.getElementById('contactForm');
-const aiSummaryField = document.createElement('input');
-aiSummaryField.type = "hidden";
-aiSummaryField.name = "ai_summary";
-aiSummaryField.id = "ai_summary";
-contactForm.appendChild(aiSummaryField);
+// -------------------- CONTACT FORM HANDLER --------------------
+const contactForm = document.getElementById("contactForm");
 
 if (contactForm) {
-  contactForm.addEventListener('submit', async (e) => {
+  contactForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(contactForm));
-
     const submitBtn = contactForm.querySelector('button[type="submit"]');
     submitBtn.textContent = "Analyzing... 🤖";
     submitBtn.disabled = true;
 
     try {
-      // Send info to your AI intake endpoint
       const res = await fetch("/.netlify/functions/ai-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
 
       const result = await res.json();
-
-      // Ask follow-up questions (optional)
-      if (result.questions && result.questions.length > 0) {
-        for (const q of result.questions) {
-          const answer = prompt(q);
-          if (answer) data[`followup_${q}`] = answer;
-        }
-      }
-
-      // Append AI summary if available
       data.ai_summary = result.summary || "";
-      aiSummaryField.value = result.summary || "";
 
-      // Send final data to Formspree
+      // Submit to Formspree (final delivery)
       await fetch(contactForm.action, {
-         method: "POST",
-         headers: { "Accept": "application/json" },
-         body: JSON.stringify(data)
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: JSON.stringify(data),
       });
 
-      contactForm.classList.add('hidden');
-      document.getElementById('contactThanks').classList.remove('hidden');
-
+      contactForm.classList.add("hidden");
+      document.getElementById("contactThanks").classList.remove("hidden");
     } catch (err) {
       console.error("AI intake failed:", err);
       alert("AI intake failed — submitting normally.");
@@ -599,6 +580,112 @@ if (contactForm) {
     }
   });
 }
+
+// -------------------- CHATBOT --------------------
+const launcher = document.getElementById("ai-chat-launcher");
+const chatModal = document.getElementById("ai-chat-modal");
+const closeChat = document.getElementById("close-chat");
+const aiForm = document.getElementById("ai-form");
+const aiInput = document.getElementById("ai-input");
+const messages = document.getElementById("ai-messages");
+
+let chatHistory = [];
+let lastAISummary = "";
+
+// Toggle modal visibility
+launcher.onclick = () => chatModal.classList.toggle("hidden");
+closeChat.onclick = () => chatModal.classList.add("hidden");
+
+// Add message to chat window
+function addMessage(text, sender = "ai") {
+  const msg = document.createElement("div");
+  msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
+  msg.textContent = text;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Handle AI summary confirmation → auto-fill contact form
+function handleSummaryConfirmation(summaryText) {
+  const btns = document.createElement("div");
+  btns.className = "flex gap-2 mt-2";
+
+  const yesBtn = document.createElement("button");
+  yesBtn.textContent = "✅ Yes, send it";
+  yesBtn.className = "px-3 py-1 bg-[#7A00FF] rounded text-white text-sm hover:bg-[#9F33FF] transition";
+
+  const noBtn = document.createElement("button");
+  noBtn.textContent = "❌ Not yet";
+  noBtn.className = "px-3 py-1 bg-slate-700 rounded text-white text-sm hover:bg-slate-600 transition";
+
+  btns.appendChild(yesBtn);
+  btns.appendChild(noBtn);
+  messages.appendChild(btns);
+  messages.scrollTop = messages.scrollHeight;
+
+  yesBtn.onclick = async () => {
+    btns.remove();
+    addMessage("✅ Great! Sending your project details to HyperLaunch...", "ai");
+
+    const form = document.getElementById("contactForm");
+    if (form) {
+      const projectField = form.querySelector("[name='project']");
+      if (projectField) projectField.value = summaryText;
+
+      await fetch(form.action, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form),
+      });
+
+      addMessage("🎉 Done! Your request has been sent. We'll be in touch soon.", "ai");
+    }
+  };
+
+  noBtn.onclick = () => {
+    btns.remove();
+    addMessage("No worries — what would you like to adjust?", "ai");
+  };
+}
+
+// Send message to AI backend
+async function sendToAI(message) {
+  try {
+    const res = await fetch("/.netlify/functions/ai-intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, history: chatHistory }),
+    });
+    const data = await res.json();
+    return data.reply;
+  } catch (err) {
+    console.error("AI chat error:", err);
+    return "⚠️ There was an issue connecting to AI.";
+  }
+}
+
+// Chat message submit
+aiForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = aiInput.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  aiInput.value = "";
+
+  const reply = await sendToAI(text);
+  if (reply) {
+    chatHistory.push({ role: "user", content: text });
+    chatHistory.push({ role: "assistant", content: reply });
+    addMessage(reply, "ai");
+
+    // Detect summary cue
+    if (reply.toLowerCase().includes("here’s a summary") || reply.toLowerCase().includes("would you like me to send")) {
+      lastAISummary = reply;
+      handleSummaryConfirmation(reply);
+    }
+  }
+});
 </script>
 
 <!-- 🔹 HyperLaunch AI Chat Assistant -->
@@ -632,82 +719,6 @@ if (contactForm) {
     </button>
   </form>
 </div>
-
-<script>
-const launcher = document.getElementById("ai-chat-launcher");
-const chatModal = document.getElementById("ai-chat-modal");
-const closeChat = document.getElementById("close-chat");
-const aiForm = document.getElementById("ai-form");
-const aiInput = document.getElementById("ai-input");
-const messages = document.getElementById("ai-messages");
-
-let chatHistory = [];
-let lastAISummary = "";
-
-// Toggle modal visibility
-launcher.onclick = () => chatModal.classList.toggle("hidden");
-closeChat.onclick = () => chatModal.classList.add("hidden");
-
-// Add message to chat window
-function addMessage(text, sender = "ai") {
-  const msg = document.createElement("div");
-  msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
-  msg.textContent = text;
-  messages.appendChild(msg);
-  messages.scrollTop = messages.scrollHeight;
-}
-
-// Send message to backend AI
-async function sendAIMessageToServer(message, history) {
-  try {
-    const res = await fetch("/.netlify/functions/ai-intake", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message, history }),
-    });
-    const data = await res.json();
-
-    if (data.reply) {
-      if (data.summary) {
-        lastAISummary = data.summary;
-        console.log("🧠 Summary captured:", lastAISummary);
-      }
-      return data.reply;
-    }
-  } catch (err) {
-    console.error("AI error:", err);
-    return "⚠️ Something went wrong, please try again.";
-  }
-}
-
-// Handle chat submit
-aiForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const text = aiInput.value.trim();
-  if (!text) return;
-
-  addMessage(text, "user");
-  aiInput.value = "";
-
-  const reply = await sendAIMessageToServer(text, chatHistory);
-
-  if (reply) {
-    chatHistory.push({ role: "user", content: text });
-    chatHistory.push({ role: "assistant", content: reply });
-    addMessage(reply, "ai");
-  }
-});
-
-// When contact form is submitted, attach last AI summary
-if (contactForm) {
-  contactForm.addEventListener("submit", () => {
-    const summaryField = document.getElementById("ai_summary");
-    if (summaryField && lastAISummary) {
-      summaryField.value = lastAISummary;
-    }
-  });
-}
-</script>
 
 
 
