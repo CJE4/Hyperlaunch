@@ -552,7 +552,7 @@ if (contactForm) {
     submitBtn.disabled = true;
 
     try {
-      const res = await fetch("/.netlify/functions/ai-intake", {
+      const res = await fetch("/api/ai-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -651,7 +651,7 @@ function handleSummaryConfirmation(summaryText) {
 // Send message to AI backend
 async function sendToAI(message) {
   try {
-    const res = await fetch("/.netlify/functions/ai-intake", {
+    const res = await fetch("/api/ai-intake", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message, history: chatHistory }),
