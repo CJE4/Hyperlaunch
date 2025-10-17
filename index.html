@@ -536,108 +536,140 @@
 
 <!-- CONTACT SCRIPT (AI-enhanced submission) -->
 <script>
-const form = document.getElementById('contactForm');
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(form));
+const contactForm = document.getElementById('contactForm');
 
-  const submitBtn = form.querySelector('button[type="submit"]');
-  submitBtn.textContent = "Analyzing... 🤖";
+if (contactForm) {
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(contactForm));
+
+    const submitBtn = contactForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = "Analyzing... 🤖";
+    submitBtn.disabled = true;
+
+    try {
+      // Ask your AI intake endpoint for clarification questions
+      const res = await fetch("/.netlify/functions/ai-intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await res.json();
+
+      // Ask follow-up questions (for now using prompt — can be expanded to chat)
+      if (result.questions && result.questions.length > 0) {
+        for (const q of result.questions) {
+          const answer = prompt(q);
+          if (answer) data[`followup_${q}`] = answer;
+        }
+      }
+
+      // Append AI summary if available
+      data.ai_summary = result.summary || "";
+
+      // Submit to Formspree (final delivery)
+      await fetch(contactForm.action, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      contactForm.classList.add('hidden');
+      document.getElementById('contactThanks').classList.remove('hidden');
+
+    } catch (err) {
+      console.error("AI intake failed:", err);
+      alert("AI intake failed — submitting normally.");
+      contactForm.submit();
+    } finally {
+      submitBtn.textContent = "Book Consult";
+      submitBtn.disabled = false;
+    }
+  });
+}
+</script>
+
+<!-- HyperLaunch AI Chat Assistant -->
+<div id="ai-chat-launcher"
+  class="fixed bottom-6 right-6 bg-gradient-to-r from-[#1877F2] to-[#7A00FF] text-white p-4 rounded-full shadow-lg cursor-pointer hover:scale-105 transition">
+  💬
+</div>
+
+<div id="ai-chat-modal"
+  class="fixed bottom-20 right-6 bg-[#0B0B15]/95 border border-[#7A00FF]/20 rounded-2xl w-80 max-h-[80vh] hidden flex flex-col shadow-2xl backdrop-blur-lg overflow-hidden">
+  <div class="flex justify-between items-center px-4 py-3 border-b border-[#7A00FF]/30">
+    <h3 class="font-semibold text-white">HyperLaunch Assistant 🚀</h3>
+    <button id="close-chat" class="text-slate-400 hover:text-white">✖</button>
+  </div>
+  <div id="ai-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm"></div>
+  <form id="ai-chat-form" class="p-3 border-t border-[#7A00FF]/20 flex gap-2">
+    <input
+      id="ai-input"
+      type="text"
+      placeholder="Type your idea..."
+      class="flex-1 bg-transparent border border-[#7A00FF]/30 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-[#7A00FF]/40"
+    />
+    <button
+      type="submit"
+      class="bg-gradient-to-r from-[#1877F2] to-[#7A00FF] px-3 py-2 rounded-md text-white font-semibold">
+      Send
+    </button>
+  </form>
+</div>
+
+<script>
+const launcher = document.getElementById("ai-chat-launcher");
+const chatModal = document.getElementById("ai-chat-modal");
+const closeChat = document.getElementById("close-chat");
+const chatForm = document.getElementById("ai-chat-form");
+const input = document.getElementById("ai-input");
+const messages = document.getElementById("ai-messages");
+
+let chatHistory = [];
+
+launcher.addEventListener("click", () => chatModal.classList.toggle("hidden"));
+closeChat.addEventListener("click", () => chatModal.classList.add("hidden"));
+
+function addMessage(text, sender = "ai") {
+  const msg = document.createElement("div");
+  msg.classList.add("px-3", "py-2", "rounded-lg", "max-w-[90%]", "whitespace-pre-wrap");
+  msg.classList.add(sender === "ai" ? "bg-[#11111A] text-slate-200 self-start" : "bg-[#7A00FF]/20 text-[#7A00FF] self-end");
+  msg.textContent = text;
+  messages.appendChild(msg);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+chatForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
 
   try {
     const res = await fetch("/.netlify/functions/ai-intake", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+      body: JSON.stringify({ message: text, history: chatHistory }),
     });
 
-    const result = await res.json();
-
-    if (result.questions && result.questions.length > 0) {
-      for (let q of result.questions) {
-        const a = prompt(q);
-        if (a) data[`followup_${q}`] = a;
-      }
+    const data = await res.json();
+    if (data.reply) {
+      chatHistory.push({ role: "user", content: text });
+      chatHistory.push({ role: "assistant", content: data.reply });
+      addMessage(data.reply, "ai");
+    } else {
+      addMessage("⚠️ Sorry, something went wrong.", "ai");
     }
-
-    data.ai_summary = result.summary || "";
-
-    await fetch(form.action, {
-      method: "POST",
-      headers: { "Accept": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    form.classList.add('hidden');
-    document.getElementById('contactThanks').classList.remove('hidden');
-
   } catch (err) {
-    alert("AI intake failed — submitting normally.");
-    form.submit();
+    console.error("Chat error:", err);
+    addMessage("⚠️ Error contacting AI server.", "ai");
   }
 });
 </script>
-    <!-- AI Chat Assistant -->
-<div id="aiChatButton" class="fixed bottom-6 right-6 bg-gradient-to-r from-[#7A00FF] to-[#1877F2] text-white p-4 rounded-full shadow-lg cursor-pointer hover:scale-110 transition">
-  💬
-</div>
 
-<div id="aiChatModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-  <div class="bg-[#0a0a0a] w-full max-w-md rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-    <div class="bg-gradient-to-r from-[#7A00FF] to-[#1877F2] p-4 text-white font-bold flex justify-between items-center">
-      <span>HyperLaunch Assistant 🚀</span>
-      <button id="aiCloseBtn" class="text-white hover:opacity-70">&times;</button>
-    </div>
-    <div id="aiChatMessages" class="p-4 h-80 overflow-y-auto text-slate-200 text-sm space-y-3">
-      <div class="text-slate-400 italic">Hi! I’m your HyperLaunch AI assistant. Tell me about your idea — I’ll help you outline the details.</div>
-    </div>
-    <form id="aiChatForm" class="border-t border-white/10 flex">
-      <input id="aiChatInput" type="text" placeholder="Type your message..." class="flex-1 bg-transparent text-slate-200 p-3 outline-none">
-      <button class="bg-gradient-to-r from-[#1877F2] to-[#7A00FF] px-4 text-white font-semibold">Send</button>
-    </form>
-  </div>
-</div>
-
-<script>
-const chatBtn = document.getElementById('aiChatButton');
-const chatModal = document.getElementById('aiChatModal');
-const closeBtn = document.getElementById('aiCloseBtn');
-const chatForm = document.getElementById('aiChatForm');
-const chatInput = document.getElementById('aiChatInput');
-const chatMessages = document.getElementById('aiChatMessages');
-
-chatBtn.onclick = () => chatModal.classList.remove('hidden');
-closeBtn.onclick = () => chatModal.classList.add('hidden');
-
-chatForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const message = chatInput.value.trim();
-  if (!message) return;
-
-  appendMessage('user', message);
-  chatInput.value = '';
-
-  appendMessage('bot', 'Thinking...');
-
-  const res = await fetch('/.netlify/functions/ai-intake', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message })
-  });
-
-  const data = await res.json();
-  document.querySelector('#aiChatMessages .bot:last-child').remove(); // remove "Thinking..."
-  appendMessage('bot', data.reply || 'Sorry, something went wrong.');
-});
-
-function appendMessage(role, text) {
-  const div = document.createElement('div');
-  div.className = role === 'user' ? 'text-[#7A00FF]' : 'text-slate-300 bot';
-  div.textContent = text;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-</script>
 
 
     <footer class="mt-12 mb-12 text-slate-400 text-sm text-center">

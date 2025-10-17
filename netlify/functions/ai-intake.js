@@ -1,40 +1,80 @@
+// netlify/functions/ai-intake.js
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-export async function handler(event, context) {
+export const handler = async (event) => {
   try {
-    const { message } = JSON.parse(event.body || "{}");
-
-    if (!message) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "No message provided" }),
-      };
-    }
+    const body = JSON.parse(event.body || "{}");
+    const message = body.message || "";
+    const history = body.history || [];
 
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
+      temperature: 0.8,
       messages: [
         {
           role: "system",
-          content:
-            "You are HyperLaunch’s AI assistant. Ask smart questions to help clients describe their brand, goals, and timeline. Be friendly, conversational, and concise.",
+          content: `
+You are HyperLaunch AI — an expert brand launch assistant that gathers details about new projects for Connor (the web developer).
+Ask questions conversationally about:
+- brand name & story
+- target audience
+- style & color preferences
+- pages or features needed
+- budget/timeline
+- goals or challenges
+
+Once you believe you have all details, summarize them in **structured JSON** like:
+{
+  "name": "",
+  "email": "",
+  "brand": "",
+  "goals": "",
+  "style": "",
+  "pages": "",
+  "features": "",
+  "timeline": ""
+}
+
+Keep your tone warm, clear, and slightly energetic (like a launch coach 🚀). 
+End by confirming if they’d like to proceed to booking a consult or quote.`,
         },
+        ...history,
         { role: "user", content: message },
       ],
     });
 
     const reply = completion.choices[0].message.content;
+
+    // Automatically email the summary if JSON detected
+    if (reply && reply.includes("{") && reply.includes("}")) {
+      try {
+        await fetch("https://formspree.io/f/xnngoodr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            _subject: "New HyperLaunch AI Intake",
+            message: reply,
+          }),
+        });
+      } catch (emailError) {
+        console.error("Formspree send failed:", emailError);
+      }
+    }
+
     return {
       statusCode: 200,
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reply }),
     };
-  } catch (err) {
-    console.error("AI Function Error:", err);
+  } catch (error) {
+    console.error("AI Intake Error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "AI Server Error", details: err.message }),
+      body: JSON.stringify({ error: "Something went wrong." }),
     };
   }
-}
+};
