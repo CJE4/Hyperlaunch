@@ -13,23 +13,26 @@ export default async function handler(req, res) {
   try {
     const { message = "", history = [] } = req.body || {};
 
-    // System prompt for conversational project intake
+    // --- Conversational step-by-step prompt ---
     const systemPrompt = `
       You are HyperLaunch Assistant 🚀 — an AI intake bot that helps new clients describe their web or brand project.
-      Your goal is to collect all important details step-by-step:
-      1. Brand name & idea
-      2. Audience
-      3. Main goal
-      4. Pages or features
-      5. Visual style
-      6. Timeline or budget
 
-      After each user reply, ask the next question until all are answered.
-      Be conversational, short, and friendly.
-      When you have all the info, summarize clearly, and ask if they’d like to send it as a project request.
+      You must act like a friendly conversation partner who asks *one question at a time*.
+      Your goal is to collect all essential info step-by-step:
+      1. Brand name & idea
+      2. Target audience
+      3. Main goal or purpose
+      4. Pages or features desired
+      5. Visual style or mood
+      6. Timeline or budget expectations
+
+      Rules:
+      - Ask the next question only after the user answers the previous one.
+      - Once you have all the info, write a short clear summary beginning with “Here’s a summary of your project:” 
+      - Then ask: “Would you like me to send this as a project request?”
+      - Keep it friendly, concise, and human.
     `;
 
-    // Chat completion
     const response = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -40,11 +43,11 @@ export default async function handler(req, res) {
       temperature: 0.7,
     });
 
-    const reply = response.choices[0].message.content;
+    const reply = response.choices?.[0]?.message?.content || "";
 
-    // If AI provided a summary, include it
-    const summaryMatch = reply.match(/summary:([\s\S]*)/i);
-    const summary = summaryMatch ? summaryMatch[1].trim() : "";
+    // Try to extract a summary section, if any
+    const summaryMatch = reply.match(/here.?s a summary([\s\S]*)/i);
+    const summary = summaryMatch ? summaryMatch[0].trim() : "";
 
     res.status(200).json({ reply, summary });
   } catch (err) {
