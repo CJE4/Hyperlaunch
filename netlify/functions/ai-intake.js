@@ -2,16 +2,26 @@ import OpenAI from "openai";
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function handler(event) {
+export async function handler(event, context) {
   try {
     const { message } = JSON.parse(event.body || "{}");
 
-    // Chat memory can be added later — for now, simple one-turn
+    if (!message) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "No message provided" }),
+      };
+    }
+
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are HyperLaunch’s AI assistant. Ask questions to help gather details about new client projects (e.g., goals, timeline, design style, budget)." },
-        { role: "user", content: message }
+        {
+          role: "system",
+          content:
+            "You are HyperLaunch’s AI assistant. Ask smart questions to help clients describe their brand, goals, and timeline. Be friendly, conversational, and concise.",
+        },
+        { role: "user", content: message },
       ],
     });
 
@@ -21,10 +31,10 @@ export async function handler(event) {
       body: JSON.stringify({ reply }),
     };
   } catch (err) {
-    console.error(err);
+    console.error("AI Function Error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Server error" }),
+      body: JSON.stringify({ error: "AI Server Error", details: err.message }),
     };
   }
 }
