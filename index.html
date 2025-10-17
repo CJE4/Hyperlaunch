@@ -436,8 +436,7 @@
   </div>
 </section>
 
-
-    <!-- CONTACT PANEL -->
+<!-- CONTACT PANEL -->
 <section id="contact-panel" class="tab-panel" role="tabpanel" aria-labelledby="contact">
   <div class="mt-10">
     <h2 class="text-3xl md:text-4xl font-extrabold mb-4 neon-heading" style="font-family:'Orbitron',sans-serif;">
@@ -484,10 +483,13 @@
         <div class="relative z-10">
           <form id="contactForm" action="https://formspree.io/f/xnngoodr" method="POST" novalidate class="space-y-4">
             <input type="hidden" name="_subject" value="HyperLaunch Consult Request" />
+            
+            <!-- 🧠 Hidden AI Summary Field -->
+            <input type="hidden" name="ai_summary" id="ai_summary" />
 
             <div>
               <label class="block text-sm mb-1 text-slate-300">Which service is this about?</label>
-              <select name="service" required
+              <select id="service" name="service" required
                 class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition">
                 <option value="">Select a service</option>
                 <option>Brand & Identity</option>
@@ -499,21 +501,21 @@
 
             <div>
               <label class="block text-sm mb-1 text-slate-300">Project Summary</label>
-              <textarea name="project" rows="4" required
+              <textarea id="project" name="project" rows="4" required
                 placeholder="Tell us about your idea, timeline, and goals."
                 class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition"></textarea>
             </div>
 
             <div>
               <label class="block text-sm mb-1 text-slate-300">Full Name</label>
-              <input name="name" required
+              <input id="name" name="name" required
                 placeholder="Your name"
                 class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition" />
             </div>
 
             <div>
               <label class="block text-sm mb-1 text-slate-300">Email</label>
-              <input name="email" type="email" required
+              <input id="email" name="email" type="email" required
                 placeholder="you@company.com"
                 class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition" />
             </div>
@@ -524,6 +526,7 @@
             </div>
           </form>
 
+          <!-- Thank You Message -->
           <div id="contactThanks" class="hidden text-center mt-6">
             <h4 class="font-semibold text-white text-lg">Thanks — we got it!</h4>
             <p class="text-slate-300 text-sm mt-2">We’ll be in touch within 48 hours.</p>
@@ -534,9 +537,16 @@
   </div>
 </section>
 
+    
+
 <!-- CONTACT SCRIPT (AI-enhanced submission) -->
 <script>
 const contactForm = document.getElementById('contactForm');
+const aiSummaryField = document.createElement('input');
+aiSummaryField.type = "hidden";
+aiSummaryField.name = "ai_summary";
+aiSummaryField.id = "ai_summary";
+contactForm.appendChild(aiSummaryField);
 
 if (contactForm) {
   contactForm.addEventListener('submit', async (e) => {
@@ -548,7 +558,7 @@ if (contactForm) {
     submitBtn.disabled = true;
 
     try {
-      // Ask your AI intake endpoint for clarification questions
+      // Send info to your AI intake endpoint
       const res = await fetch("/.netlify/functions/ai-intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -557,7 +567,7 @@ if (contactForm) {
 
       const result = await res.json();
 
-      // Ask follow-up questions (for now using prompt — can be expanded to chat)
+      // Ask follow-up questions (optional)
       if (result.questions && result.questions.length > 0) {
         for (const q of result.questions) {
           const answer = prompt(q);
@@ -567,14 +577,14 @@ if (contactForm) {
 
       // Append AI summary if available
       data.ai_summary = result.summary || "";
+      aiSummaryField.value = result.summary || "";
 
-      // Submit to Formspree (final delivery)
-      await fetch(form.action, {
+      // Send final data to Formspree
+      await fetch(contactForm.action, {
          method: "POST",
          headers: { "Accept": "application/json" },
          body: JSON.stringify(data)
       });
-
 
       contactForm.classList.add('hidden');
       document.getElementById('contactThanks').classList.remove('hidden');
@@ -632,18 +642,42 @@ const aiInput = document.getElementById("ai-input");
 const messages = document.getElementById("ai-messages");
 
 let chatHistory = [];
+let lastAISummary = "";
 
 // Toggle modal visibility
 launcher.onclick = () => chatModal.classList.toggle("hidden");
 closeChat.onclick = () => chatModal.classList.add("hidden");
 
-// Function to add messages
+// Add message to chat window
 function addMessage(text, sender = "ai") {
   const msg = document.createElement("div");
   msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
   msg.textContent = text;
   messages.appendChild(msg);
   messages.scrollTop = messages.scrollHeight;
+}
+
+// Send message to backend AI
+async function sendAIMessageToServer(message, history) {
+  try {
+    const res = await fetch("/.netlify/functions/ai-intake", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, history }),
+    });
+    const data = await res.json();
+
+    if (data.reply) {
+      if (data.summary) {
+        lastAISummary = data.summary;
+        console.log("🧠 Summary captured:", lastAISummary);
+      }
+      return data.reply;
+    }
+  } catch (err) {
+    console.error("AI error:", err);
+    return "⚠️ Something went wrong, please try again.";
+  }
 }
 
 // Handle chat submit
@@ -655,29 +689,25 @@ aiForm.addEventListener("submit", async (e) => {
   addMessage(text, "user");
   aiInput.value = "";
 
-  try {
-    const res = await fetch("/.netlify/functions/ai-intake", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, history: chatHistory }),
-    });
+  const reply = await sendAIMessageToServer(text, chatHistory);
 
-    const data = await res.json();
-
-    if (data.reply) {
-      chatHistory.push({ role: "user", content: text });
-      chatHistory.push({ role: "assistant", content: data.reply });
-      addMessage(data.reply, "ai");
-    } else {
-      addMessage("⚠️ Sorry, I had trouble responding. Please try again.");
-    }
-  } catch (err) {
-    console.error("AI chat error:", err);
-    addMessage("⚠️ Connection error — please try again.", "ai");
+  if (reply) {
+    chatHistory.push({ role: "user", content: text });
+    chatHistory.push({ role: "assistant", content: reply });
+    addMessage(reply, "ai");
   }
 });
-</script>
 
+// When contact form is submitted, attach last AI summary
+if (contactForm) {
+  contactForm.addEventListener("submit", () => {
+    const summaryField = document.getElementById("ai_summary");
+    if (summaryField && lastAISummary) {
+      summaryField.value = lastAISummary;
+    }
+  });
+}
+</script>
 
 
 
