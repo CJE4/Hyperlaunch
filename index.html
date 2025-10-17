@@ -569,11 +569,12 @@ if (contactForm) {
       data.ai_summary = result.summary || "";
 
       // Submit to Formspree (final delivery)
-      await fetch(contactForm.action, {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: JSON.stringify(data)
+      await fetch(form.action, {
+         method: "POST",
+         headers: { "Accept": "application/json" },
+         body: JSON.stringify(data)
       });
+
 
       contactForm.classList.add('hidden');
       document.getElementById('contactThanks').classList.remove('hidden');
