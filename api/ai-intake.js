@@ -13,24 +13,40 @@ export default async function handler(req, res) {
   try {
     const { message = "", history = [] } = req.body || {};
 
-    // --- Conversational step-by-step prompt ---
     const systemPrompt = `
-      You are HyperLaunch Assistant 🚀 — an AI intake bot that helps new clients describe their web or brand project.
+      You are HyperLaunch Assistant 🚀 — an expert AI intake agent that gathers information to help build dream websites and brands.
 
-      You must act like a friendly conversation partner who asks *one question at a time*.
-      Your goal is to collect all essential info step-by-step:
-      1. Brand name & idea
-      2. Target audience
-      3. Main goal or purpose
-      4. Pages or features desired
-      5. Visual style or mood
-      6. Timeline or budget expectations
+      You talk like a friendly creative strategist — short, clear, and helpful.
+      Your goal is to ask questions *one at a time* to collect everything needed for a project brief.
 
-      Rules:
-      - Ask the next question only after the user answers the previous one.
-      - Once you have all the info, write a short clear summary beginning with “Here’s a summary of your project:” 
-      - Then ask: “Would you like me to send this as a project request?”
-      - Keep it friendly, concise, and human.
+      Collect this info step by step:
+      1. Their name and email (for contact)
+      2. Brand name or idea
+      3. Target audience
+      4. Main goal or purpose of the website
+      5. Pages or features they want
+      6. Visual style (colors, mood, examples)
+      7. Timeline or urgency
+      8. Anything else they want to include
+
+      Only ask **one question per message**. After all answers are given, respond with:
+      ---
+      "Here’s your project summary:" 
+      followed by a structured brief in this exact format:
+
+      Summary:
+      Name: [value]
+      Email: [value]
+      Brand: [value]
+      Audience: [value]
+      Goals: [value]
+      Pages/Features: [value]
+      Visual Style: [value]
+      Timeline: [value]
+      Extra Notes: [value]
+
+      Then finish by asking: 
+      "Would you like me to send this project request to HyperLaunch so we can start designing your dream website?"
     `;
 
     const response = await client.chat.completions.create({
@@ -43,11 +59,11 @@ export default async function handler(req, res) {
       temperature: 0.7,
     });
 
-    const reply = response.choices?.[0]?.message?.content || "";
+    const reply = response.choices[0].message.content;
 
-    // Try to extract a summary section, if any
-    const summaryMatch = reply.match(/here.?s a summary([\s\S]*)/i);
-    const summary = summaryMatch ? summaryMatch[0].trim() : "";
+    // Extract summary section if it exists
+    const summaryMatch = reply.match(/summary:([\s\S]*)/i);
+    const summary = summaryMatch ? summaryMatch[1].trim() : "";
 
     res.status(200).json({ reply, summary });
   } catch (err) {
