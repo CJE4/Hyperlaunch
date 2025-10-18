@@ -26,8 +26,9 @@ export default async function handler(req, res) {
       4. Main goal or purpose of the website
       5. Pages or features they want
       6. Visual style (colors, mood, examples)
-      7. Timeline or urgency
-      8. Anything else they want to include
+      7. desired package (Starter, Growth, or LiftOff Pro)
+      8. Timeline or urgency
+      9. Anything else they want to include
 
       Only ask **one question per message**. After all answers are given, respond with:
       ---
@@ -42,6 +43,7 @@ export default async function handler(req, res) {
       Goals: [value]
       Pages/Features: [value]
       Visual Style: [value]
+      Budget / Package: [value]
       Timeline: [value]
       Extra Notes: [value]
 
@@ -61,9 +63,10 @@ export default async function handler(req, res) {
 
     const reply = response.choices[0].message.content;
 
-    // Extract summary section if it exists
-    const summaryMatch = reply.match(/summary:([\s\S]*)/i);
-    const summary = summaryMatch ? summaryMatch[1].trim() : "";
+    const summaryMatch = reply.match(
+      /✨ \*\*HYPERLAUNCH PROJECT SUMMARY\*\*[\s\S]*?(?=Would you like|$)/i
+    );
+    const summary = summaryMatch ? summaryMatch[0].trim() : "";
 
     res.status(200).json({ reply, summary });
   } catch (err) {
@@ -71,3 +74,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "AI request failed" });
   }
 }
+
