@@ -438,103 +438,59 @@
 
 <!-- CONTACT PANEL -->
 <section id="contact-panel" class="tab-panel" role="tabpanel" aria-labelledby="contact">
-  <div class="mt-10">
-    <h2 class="text-3xl md:text-4xl font-extrabold mb-4 neon-heading" style="font-family:'Orbitron',sans-serif;">
-      Let’s Build Your Launch 🚀
-    </h2>
-    <p class="text-slate-300 max-w-2xl mb-8">
-      Tell us about your idea — our AI assistant will ask a few smart questions before we prepare your plan.
-    </p>
+<div class="grid md:grid-cols-2 gap-10 items-stretch">
+  <!-- LEFT INFO -->
+  <div class="relative glass rounded-2xl border border-[#7A00FF]/30 p-8 backdrop-blur-xl bg-[#0E0E1A]/70 shadow-[0_0_30px_rgba(122,0,255,0.15)]">
+    <div class="absolute inset-0 bg-gradient-to-br from-[#7A00FF]/10 via-transparent to-[#1877F2]/10 rounded-2xl pointer-events-none"></div>
+    <div class="relative z-10">
+      <h4 class="text-xl font-semibold text-white mb-5">What to Expect</h4>
+      <ul class="space-y-4 text-slate-300 text-sm">
+        <li class="flex items-start gap-3"><span class="text-[#7A00FF] text-lg">🤖</span> <span>Smart AI chat to understand your vision & goals</span></li>
+        <li class="flex items-start gap-3"><span class="text-[#1877F2] text-lg">🎯</span> <span>Get your project roadmap & quote within 48 hours</span></li>
+        <li class="flex items-start gap-3"><span class="text-[#7A00FF] text-lg">🌐</span> <span>Fully personalized launch strategy</span></li>
+      </ul>
 
-    <div class="grid md:grid-cols-2 gap-10">
-      <!-- LEFT INFO -->
-      <div class="relative glass p-6 rounded-2xl reveal overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-[#7A00FF]/10 to-[#1877F2]/10 opacity-50 rounded-2xl"></div>
-        <div class="relative z-10">
-          <h4 class="font-semibold text-white mb-4 text-lg">What to Expect</h4>
-          <ul class="text-slate-300 text-sm space-y-3">
-            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">🤖</span> AI-powered intake to gather details</li>
-            <li class="flex items-start gap-2"><span class="text-[#1877F2]">📋</span> Quick roadmap & quote within 48 hours</li>
-            <li class="flex items-start gap-2"><span class="text-[#7A00FF]">🧭</span> Personalized recommendations</li>
-          </ul>
+      <div class="mt-10 border-t border-white/10 pt-6">
+        <h5 class="font-semibold text-white text-lg mb-2">Contact</h5>
+        <p class="text-slate-300 text-sm">
+          <strong>Email:</strong>
+          <a href="mailto:hyp3rlaunch@gmail.com" class="underline text-[#7A00FF] hover:text-[#9B33FF] transition">
+            hyp3rlaunch@gmail.com
+          </a>
+        </p>
+        <p class="text-slate-300 text-sm mt-2"><strong>Office:</strong> Remote • Worldwide</p>
 
-          <div class="mt-8 border-t border-white/10 pt-5">
-            <h5 class="font-semibold text-white text-lg mb-2">Contact</h5>
-            <p class="text-slate-300 text-sm">
-              <strong>Email:</strong>
-              <a href="mailto:hyp3rlaunch@gmail.com" class="underline hover:text-[#7A00FF] transition">
-                hyp3rlaunch@gmail.com
-              </a>
-            </p>
-            <p class="text-slate-300 text-sm mt-2"><strong>Office:</strong> Remote • Worldwide</p>
-
-            <div class="mt-8">
-              <button onclick="openTab('pricing')" class="px-5 py-2 rounded-md neon-btn text-black font-semibold hover:opacity-90 transition">
-                View Packages
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT FORM -->
-      <div class="relative glass p-6 rounded-2xl reveal overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-tr from-[#1877F2]/10 to-[#7A00FF]/10 opacity-50 rounded-2xl"></div>
-        <div class="relative z-10">
-          <form id="contactForm" action="https://formspree.io/f/xnngoodr" method="POST" novalidate class="space-y-4">
-            <input type="hidden" name="_subject" value="HyperLaunch Consult Request" />
-            
-            <!-- 🧠 Hidden AI Summary Field -->
-            <input type="hidden" name="ai_summary" id="ai_summary" />
-
-            <div>
-              <label class="block text-sm mb-1 text-slate-300">Which service is this about?</label>
-              <select id="service" name="service" required
-                class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition">
-                <option value="">Select a service</option>
-                <option>Brand & Identity</option>
-                <option>Web & E-commerce</option>
-                <option>Launch Strategy</option>
-                <option>Full Launch Package</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-sm mb-1 text-slate-300">Project Summary</label>
-              <textarea id="project" name="project" rows="4" required
-                placeholder="Tell us about your idea, timeline, and goals."
-                class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition"></textarea>
-            </div>
-
-            <div>
-              <label class="block text-sm mb-1 text-slate-300">Full Name</label>
-              <input id="name" name="name" required
-                placeholder="Your name"
-                class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition" />
-            </div>
-
-            <div>
-              <label class="block text-sm mb-1 text-slate-300">Email</label>
-              <input id="email" name="email" type="email" required
-                placeholder="you@company.com"
-                class="w-full p-3 rounded-md bg-white/5 border border-white/10 text-slate-200 focus:border-[#7A00FF] focus:ring-2 focus:ring-[#7A00FF]/30 transition" />
-            </div>
-
-            <div class="flex flex-wrap items-center gap-3 mt-5">
-              <button type="submit" class="neon-btn px-6 py-3 rounded-md font-semibold text-black">Book Consult</button>
-              <a href="mailto:hyp3rlaunch@gmail.com" class="text-slate-400 text-sm underline hover:text-white transition">Or email us directly</a>
-            </div>
-          </form>
-
-          <!-- Thank You Message -->
-          <div id="contactThanks" class="hidden text-center mt-6">
-            <h4 class="font-semibold text-white text-lg">Thanks — we got it!</h4>
-            <p class="text-slate-300 text-sm mt-2">We’ll be in touch within 48 hours.</p>
-          </div>
+        <div class="mt-8">
+          <button onclick="openTab('pricing')" class="px-6 py-3 rounded-md font-semibold neon-btn text-black hover:opacity-90 transition">
+            View Packages
+          </button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- RIGHT CHAT AREA -->
+  <div class="relative rounded-2xl border border-[#7A00FF]/30 bg-[#0B0B15]/70 backdrop-blur-lg shadow-[0_0_40px_rgba(122,0,255,0.25)] overflow-hidden">
+    <!-- Decorative gradient glow -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#7A00FF]/10 via-transparent to-[#1877F2]/10 pointer-events-none"></div>
+    
+    <!-- Chat inner -->
+    <div class="relative z-10 flex flex-col h-[480px]">
+      <div id="ai-messages" class="flex-1 p-5 overflow-y-auto space-y-3 text-sm text-slate-200 border-b border-[#7A00FF]/20">
+        <div class="text-slate-400 italic animate-pulse">👋 Hey there! I’m the HyperLaunch Assistant. Let’s create your perfect launch — tell me about your idea.</div>
+      </div>
+      
+      <form id="ai-form" class="flex gap-2 p-4 border-t border-[#7A00FF]/30 bg-[#111122]/80">
+        <input id="ai-input" type="text" placeholder="Type your message..."
+          class="flex-1 bg-transparent border border-[#7A00FF]/40 rounded-md px-3 py-2 text-white placeholder-slate-500 focus:ring-2 focus:ring-[#7A00FF]/40 focus:outline-none" />
+        <button type="submit"
+          class="bg-gradient-to-r from-[#1877F2] to-[#7A00FF] px-4 py-2 rounded-md text-white font-semibold hover:scale-105 transition-transform">
+          ➤
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 </section>
 
     
