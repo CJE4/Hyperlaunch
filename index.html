@@ -541,8 +541,15 @@
 <!-- 🔹 CONTACT FORM + AI CHAT INTEGRATION -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // -------------------- CONTACT FORM HANDLER --------------------
+  // -------------------- CONTACT FORM --------------------
   const contactForm = document.getElementById("contactForm");
+  const contactFields = {
+    name: contactForm?.querySelector("[name='name']"),
+    email: contactForm?.querySelector("[name='email']"),
+    project: contactForm?.querySelector("[name='project']"),
+    service: contactForm?.querySelector("[name='service']"),
+    ai_summary: contactForm?.querySelector("[name='ai_summary']")
+  };
 
   if (contactForm) {
     contactForm.addEventListener("submit", async (e) => {
@@ -562,7 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await res.json();
         data.ai_summary = result.summary || "";
 
-        // Submit to Formspree (final delivery)
+        // Submit to Formspree
         await fetch(contactForm.action, {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -590,24 +597,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const aiInput = document.getElementById("ai-input");
   const messages = document.getElementById("ai-messages");
 
-  if (!launcher || !chatModal || !aiForm) {
-    console.warn("Chat elements not found");
-    return;
-  }
-
   let chatHistory = [];
   let lastAISummary = "";
 
-  // Toggle modal visibility
-  launcher.addEventListener("click", () => {
-    chatModal.classList.toggle("hidden");
-  });
+  if (!launcher || !chatModal || !aiForm) return;
 
-  closeChat.addEventListener("click", () => {
-    chatModal.classList.add("hidden");
-  });
+  launcher.onclick = () => chatModal.classList.toggle("hidden");
+  closeChat.onclick = () => chatModal.classList.add("hidden");
 
-  // Add message to chat window
   function addMessage(text, sender = "ai") {
     const msg = document.createElement("div");
     msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
@@ -616,8 +613,26 @@ document.addEventListener("DOMContentLoaded", () => {
     messages.scrollTop = messages.scrollHeight;
   }
 
-  // Handle AI summary confirmation → auto-fill contact form
+  // 🧩 Extract structured info from AI summary
+  function parseAIResponse(summaryText) {
+    const info = {};
+    const patterns = {
+      name: /name[:\-]\s*([^\n]+)/i,
+      email: /email[:\-]\s*([^\n]+)/i,
+      service: /service[:\-]\s*([^\n]+)/i,
+      project: /project[:\-]\s*([\s\S]*)/i,
+    };
+
+    for (const key in patterns) {
+      const match = summaryText.match(patterns[key]);
+      if (match) info[key] = match[1].trim();
+    }
+    return info;
+  }
+
+  // 🧠 Handle AI summary confirmation → auto-fill + send
   function handleSummaryConfirmation(summaryText) {
+    const parsed = parseAIResponse(summaryText);
     const btns = document.createElement("div");
     btns.className = "flex gap-2 mt-2";
 
@@ -642,9 +657,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const form = document.getElementById("contactForm");
       if (form) {
-        const projectField = form.querySelector("[name='project']");
-        if (projectField) projectField.value = summaryText;
+        // ✅ Auto-fill contact form with parsed data
+        if (parsed.name && contactFields.name) contactFields.name.value = parsed.name;
+        if (parsed.email && contactFields.email) contactFields.email.value = parsed.email;
+        if (parsed.service && contactFields.service) contactFields.service.value = parsed.service;
+        if (parsed.project && contactFields.project) contactFields.project.value = parsed.project;
+        if (contactFields.ai_summary) contactFields.ai_summary.value = summaryText;
 
+        // ✅ Submit via Formspree
         await fetch(form.action, {
           method: "POST",
           headers: { Accept: "application/json" },
@@ -661,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Send message to AI backend
+  // -------------------- AI MESSAGE HANDLER --------------------
   async function sendToAI(message) {
     try {
       const res = await fetch("/api/ai-intake", {
@@ -677,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Chat message submit
+  // -------------------- CHAT SUBMIT --------------------
   aiForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = aiInput.value.trim();
@@ -692,9 +712,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chatHistory.push({ role: "assistant", content: reply });
       addMessage(reply, "ai");
 
-      // Detect summary cue
+      // Detect summary / final stage
       if (
-        reply.toLowerCase().includes("here’s a summary") ||
+        reply.toLowerCase().includes("summary") ||
         reply.toLowerCase().includes("would you like me to send")
       ) {
         lastAISummary = reply;
