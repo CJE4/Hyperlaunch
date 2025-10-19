@@ -458,6 +458,143 @@ function startAIWithService(serviceName) {
       </button>
     </div>
   </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const launcher = document.getElementById("ai-chat-launcher");
+  const chatModal = document.getElementById("ai-chat-modal");
+  const closeChat = document.getElementById("close-chat");
+  const aiForm = document.getElementById("ai-form");
+  const aiInput = document.getElementById("ai-input");
+  const messages = document.getElementById("ai-messages");
+
+  let chatHistory = [];
+  let selectedService = "";
+  let lastAISummary = "";
+
+  // Open chat manually or from pricing/service panels
+  window.startAIWithService = (serviceName) => {
+    selectedService = serviceName;
+    chatModal.classList.remove("hidden");
+    messages.innerHTML = `<div class="text-slate-400 italic">👋 Awesome! You’re interested in <strong>${serviceName}</strong>. Let’s plan your project — what’s your brand or idea called?</div>`;
+  };
+
+  // Toggle chat modal visibility
+  if (launcher) {
+    launcher.addEventListener("click", () => {
+      chatModal.classList.toggle("hidden");
+    });
+  }
+
+  if (closeChat) {
+    closeChat.addEventListener("click", () => {
+      chatModal.classList.add("hidden");
+    });
+  }
+
+  // Add message to chat window
+  function addMessage(text, sender = "ai") {
+    const msg = document.createElement("div");
+    msg.className = sender === "ai" ? "text-slate-300" : "text-[#7A00FF] text-right";
+    msg.textContent = text;
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  // Send message to AI backend
+  async function sendToAI(message) {
+    try {
+      const res = await fetch("/api/ai-intake", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          history: chatHistory,
+          service: selectedService,
+        }),
+      });
+      const data = await res.json();
+      return data.reply;
+    } catch (err) {
+      console.error("AI chat error:", err);
+      return "⚠️ There was an issue connecting to AI.";
+    }
+  }
+
+  // Handle chat form submission
+  if (aiForm) {
+    aiForm.addEventListener("submit", async (e) => {
+      e.preventDefault(); // ✅ Prevent page reload
+      const text = aiInput.value.trim();
+      if (!text) return;
+
+      addMessage(text, "user");
+      aiInput.value = "";
+
+      const reply = await sendToAI(text);
+      if (reply) {
+        chatHistory.push({ role: "user", content: text });
+        chatHistory.push({ role: "assistant", content: reply });
+        addMessage(reply, "ai");
+
+        // Detect summary cue and offer confirmation
+        if (
+          reply.toLowerCase().includes("here’s your project summary") ||
+          reply.toLowerCase().includes("would you like me to send")
+        ) {
+          lastAISummary = reply;
+          handleSummaryConfirmation(reply);
+        }
+      }
+    });
+  }
+
+  // Handle summary confirmation → auto-fill form
+  function handleSummaryConfirmation(summaryText) {
+    const btns = document.createElement("div");
+    btns.className = "flex gap-2 mt-2";
+
+    const yesBtn = document.createElement("button");
+    yesBtn.textContent = "✅ Yes, send it";
+    yesBtn.className =
+      "px-3 py-1 bg-[#7A00FF] rounded text-white text-sm hover:bg-[#9F33FF] transition";
+
+    const noBtn = document.createElement("button");
+    noBtn.textContent = "❌ Not yet";
+    noBtn.className =
+      "px-3 py-1 bg-slate-700 rounded text-white text-sm hover:bg-slate-600 transition";
+
+    btns.appendChild(yesBtn);
+    btns.appendChild(noBtn);
+    messages.appendChild(btns);
+    messages.scrollTop = messages.scrollHeight;
+
+    yesBtn.onclick = async () => {
+      btns.remove();
+      addMessage("✅ Great! Sending your project details to HyperLaunch...", "ai");
+
+      const form = document.getElementById("contactForm");
+      if (form) {
+        const projectField = form.querySelector("[name='project']");
+        if (projectField) projectField.value = summaryText;
+
+        await fetch(form.action, {
+          method: "POST",
+          headers: { Accept: "application/json" },
+          body: new FormData(form),
+        });
+
+        addMessage("🎉 Done! Your request has been sent. We'll reach out soon.", "ai");
+      }
+    };
+
+    noBtn.onclick = () => {
+      btns.remove();
+      addMessage("No worries — what would you like to adjust?", "ai");
+    };
+  }
+});
+</script>
+
 </section>
 
 
