@@ -56,7 +56,6 @@ const systemPrompt = `
   Then ask:
   "Would you like me to send this project request to HyperLaunch so we can start designing your dream website?"
 `;
-console.log("API key exists:", !!process.env.OPENAI_API_KEY);
 const response = await client.chat.completions.create({
   model: "gpt-4o-mini",
   messages: [
