@@ -70,24 +70,34 @@ export default async function handler(req, res) {
       temperature: 0.7,
     });
 
-    const reply =
-      response.choices?.[0]?.message?.content || "";
+    const reply = response.choices?.[0]?.message?.content || "";
 
-    // Extract structured parts
     const summaryMatch = reply.match(/summary:([\s\S]*?)AI Prompt for Builder:/i);
     const aiPromptMatch = reply.match(/AI Prompt for Builder:\s*["“](.+?)["”]/i);
 
     const summary = summaryMatch ? summaryMatch[1].trim() : "";
     const aiPrompt = aiPromptMatch ? aiPromptMatch[1].trim() : "";
 
-    return res.status(200).json({
-      reply,
-      summary,
-      aiPrompt,
-    });
+    // ✅ Automatically send to Formspree if a full summary is generated
+    if (summary) {
+      try {
+        const fsRes = await fetch("https://formspree.io/f/xnngoodr", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ summary, aiPrompt }),
+        });
+        console.log("✅ Sent to Formspree:", fsRes.status);
+      } catch (fsErr) {
+        console.error("❌ Failed to send to Formspree:", fsErr);
+      }
+    }
 
+    return res.status(200).json({ reply, summary, aiPrompt });
   } catch (err) {
     console.error("AI Intake Error:", err);
-    return res.status(500).json({ error: "AI request failed", details: err.message });
+    return res.status(500).json({
+      error: "AI request failed",
+      details: err.message,
+    });
   }
 }
