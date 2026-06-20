@@ -1,7 +1,9 @@
 import OpenAI from "openai";
 
+// Using Groq's free, OpenAI-compatible API instead of OpenAI directly.
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
 });
 
 export default async function handler(req, res) {
@@ -12,7 +14,7 @@ export default async function handler(req, res) {
   try {
     const { message = "", history = [], service = "" } = req.body || {};
 
-    console.log("API key exists:", !!process.env.OPENAI_API_KEY);
+    console.log("Groq API key exists:", !!process.env.GROQ_API_KEY);
 
     const systemPrompt = `
       You are HyperLaunch Assistant 🚀 — an expert AI intake strategist that helps gather project details to design dream websites and brands.
@@ -61,7 +63,7 @@ export default async function handler(req, res) {
     `;
 
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         ...history,
@@ -98,6 +100,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       error: "AI request failed",
       details: err.message,
+      reply: `⚠️ AI error: ${err.message}`,
     });
   }
 }
