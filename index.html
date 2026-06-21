@@ -1,603 +1,331 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HyperLaunch — We Build What You Imagine.</title>
-  <meta name="description" content="HyperLaunch turns ideas into revenue-ready brands, websites, and launch campaigns — built fast and engineered to scale.">
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="assets/HyperLaunch_Logo-removebg-preview.png" />
-
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- GSAP (optional) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-
-  <!-- SellAuth embed (kept) -->
-  <script src="https://sellauth.com/assets/js/sellauth-embed-2.js" defer></script>
-
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --neon-blue:#1877F2;
-      --cyber-violet:#7A00FF;
-      --glass-alpha: 0.03;
-      --radius: 14px;
-    }
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
-      -webkit-font-smoothing:antialiased;
-      background:
-        radial-gradient(1200px 600px at 10% 20%, rgba(24,119,242,0.06), transparent 8%),
-        radial-gradient(900px 450px at 90% 80%, rgba(122,0,255,0.04), transparent 10%),
-        linear-gradient(180deg,#0a0a14 0%, #04040a 100%);
-      color:#eaf1ff;
-    }
-    header{ position:fixed; top:0; left:0; right:0; z-index:60; background: linear-gradient(180deg, rgba(6,6,10,0.6), rgba(6,6,10,0.35)); border-bottom:1px solid rgba(255,255,255,0.03); backdrop-filter: blur(8px); }
-    main { padding-top:92px; max-width:1150px; margin-left:auto; margin-right:auto; padding-left:20px; padding-right:20px; }
-    .neon-head { text-shadow:0 10px 44px rgba(24,119,242,0.14), 0 4px 18px rgba(122,0,255,0.06); font-family:'Orbitron',sans-serif; }
-    .neon-btn { background: linear-gradient(90deg,var(--neon-blue),var(--cyber-violet)); color:#000; font-weight:600; box-shadow: 0 10px 30px rgba(24,119,242,0.08); }
-    .glass { background: linear-gradient(180deg, rgba(255,255,255,var(--glass-alpha)), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); backdrop-filter: blur(8px); border-radius:var(--radius); }
-    .reveal { opacity:0; transform: translateY(10px); transition: all 600ms cubic-bezier(.2,.9,.3,1); }
-    .reveal.show { opacity:1; transform:none; }
-    .tab-panel { display:none; opacity:0; transform: translateY(8px); transition: all 420ms ease; }
-    .tab-panel.active { display:block; opacity:1; transform:none; }
-    .btn-ghost { background: transparent; border:1px solid rgba(255,255,255,0.06); padding:.6rem 1rem; border-radius:.6rem; color:inherit; }
-
-    /* Chat card styling for Contact AI */
-    .chat-card { width:100%; max-width:900px; margin:0 auto; border-radius:16px; overflow:hidden; position:relative; }
-    .chat-header { padding:18px 20px; display:flex; align-items:center; gap:12px; }
-    .chat-body { padding:18px; max-height:520px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
-    .chat-input { display:flex; gap:10px; padding:14px; border-top:1px solid rgba(255,255,255,0.03); }
-    .msg { max-width:82%; padding:10px 12px; border-radius:12px; display:inline-block; opacity:0; transform: translateY(8px); transition: all 360ms cubic-bezier(.2,.9,.3,1); }
-    .msg.show { opacity:1; transform:none; }
-    .msg.ai { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border:1px solid rgba(122,0,255,0.06); color:#eaf1ff; align-self:flex-start; }
-    .msg.user { background: linear-gradient(90deg, rgba(122,0,255,0.14), rgba(24,119,242,0.06)); color:#000; align-self:flex-end; }
-    .typing { display:inline-flex; gap:6px; align-items:center; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.02); }
-    .dot { width:6px; height:6px; background:#fff; border-radius:50%; opacity:0.6; animation: blink 1s infinite; }
-    .dot:nth-child(2){ animation-delay: .15s; }
-    .dot:nth-child(3){ animation-delay: .3s; }
-    @keyframes blink { 0% { transform: translateY(0); opacity:.25 } 50% { transform: translateY(-6px); opacity:1 } 100% { transform: translateY(0); opacity:.25 } }
-
-    /* simple responsive tweaks */
-    @media (max-width:880px){
-      header nav.desktop{display:none;}
-      header .mobile-toggle{display:block;}
-      .chat-body { max-height:360px; }
-    }
-    @media (min-width:881px){
-      header .mobile-toggle{display:none;}
-    }
-
-    /* small helper formatting for summary block */
-    .summary-block { background: rgba(0,0,0,0.35); border-radius:12px; padding:12px; border:1px solid rgba(255,255,255,0.03); font-size:14px; color:#dbeafe; white-space:pre-wrap; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyperLaunch — We Build What You Imagine.</title>
+<meta name="description" content="HyperLaunch turns ideas into revenue-ready brands, websites, and launch campaigns — built fast and engineered to scale.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" type="image/png" href="assets/HyperLaunch_Logo-removebg-preview.png">
+<meta property="og:title" content="HyperLaunch — We Build What You Imagine.">
+<meta property="og:description" content="Brand, website, and launch strategy — built fast and crafted to scale.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#07060a">
+<script src="https://sellauth.com/assets/js/sellauth-embed-2.js" defer></script>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-      <div class="flex items-center gap-3">
-        <button aria-label="Go to Home" class="flex items-center gap-3" onclick="openTab('home')">
-          <img src="assets/HyperLaunch_Logo-removebg-preview.png" alt="HyperLaunch logo" class="w-12 h-12 rounded-lg" />
-          <div>
-            <div class="neon-head text-white font-extrabold">HyperLaunch</div>
-            <div class="text-slate-300 text-xs">We Build What You Imagine.</div>
-          </div>
-        </button>
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="loader-mark"></div>
+  <div class="loader-text">HYPERLAUNCH</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<div id="scrollProgress"></div>
+
+<!-- NAV / TABS -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="javascript:void(0)" class="nav-logo" onclick="switchTab('home')">
+      <img src="assets/HyperLaunch_Logo-removebg-preview.png" alt="HyperLaunch logo">
+      <div class="nav-logo-text">HyperLaunch<span>We Build What You Imagine</span></div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="javascript:void(0)" data-tab="home" onclick="switchTab('home')">Home</a></li>
+      <li><a href="javascript:void(0)" data-tab="services" onclick="switchTab('services')">Services</a></li>
+      <li><a href="javascript:void(0)" data-tab="work" onclick="switchTab('work')">Work</a></li>
+      <li><a href="javascript:void(0)" data-tab="pricing" onclick="switchTab('pricing')">Pricing</a></li>
+      <li><a href="javascript:void(0)" data-tab="contact" onclick="switchTab('contact')">Contact</a></li>
+    </ul>
+    <a href="javascript:void(0)" class="nav-cta" onclick="switchTab('contact')">Start Your Launch</a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="javascript:void(0)" data-tab="home" onclick="switchTab('home');closeMobile()">Home</a>
+  <a href="javascript:void(0)" data-tab="services" onclick="switchTab('services');closeMobile()">Services</a>
+  <a href="javascript:void(0)" data-tab="work" onclick="switchTab('work');closeMobile()">Work</a>
+  <a href="javascript:void(0)" data-tab="pricing" onclick="switchTab('pricing');closeMobile()">Pricing</a>
+  <a href="javascript:void(0)" data-tab="contact" onclick="switchTab('contact');closeMobile()">Contact</a>
+  <a href="javascript:void(0)" class="btn-primary" onclick="switchTab('contact');closeMobile()">Start Your Launch</a>
+</div>
+
+<main>
+
+<!-- ============================================================
+     HOME
+     ============================================================ -->
+<div class="tab-panel" id="tab-home">
+
+  <section id="hero">
+    <canvas id="particleCanvas"></canvas>
+    <div class="hero-veil"></div>
+    <div class="hero-content">
+      <div class="hero-badge">Brand · Web · Launch Strategy</div>
+      <h1 class="hero-title">We Build <span class="accent">What You Imagine.</span></h1>
+      <p class="hero-sub">HyperLaunch turns ideas into revenue-ready businesses — brand, product, website, and launch strategy — built fast and crafted to scale.</p>
+      <div class="hero-buttons">
+        <a href="javascript:void(0)" class="btn-primary" onclick="switchTab('contact')">Start Your Launch</a>
+        <a href="javascript:void(0)" class="btn-secondary" onclick="switchTab('services')">See Services</a>
       </div>
-
-      <nav class="desktop flex items-center gap-6 text-sm tab-links" role="tablist" aria-label="Primary">
-        <a role="tab" class="tab-link" onclick="openTab('home')">Home</a>
-        <a role="tab" class="tab-link" onclick="openTab('services')">Services</a>
-        <a role="tab" class="tab-link" onclick="openTab('work')">Work</a>
-        <a role="tab" class="tab-link" onclick="openTab('pricing')">Pricing</a>
-        <a role="tab" class="tab-link" onclick="openTab('contact')">Contact</a>
-        <button onclick="openTab('contact')" class="ml-4 neon-btn px-4 py-2 rounded-md">Start Your Launch</button>
-      </nav>
-
-      <button class="mobile-toggle p-2 rounded-md bg-white/5" aria-label="Open menu" onclick="toggleMobile()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-      </button>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-num" data-target="30" data-suffix="+">0</div><div class="stat-label">Brands Launched</div></div>
+        <div class="stat-item"><div class="stat-num" data-target="7" data-suffix=" Days">0</div><div class="stat-label">Avg. Time to Live</div></div>
+        <div class="stat-item"><div class="stat-num" data-target="100" data-suffix="%">0</div><div class="stat-label">Built to Scale</div></div>
+      </div>
     </div>
+    <div class="scroll-hint"><div class="scroll-hint-line"></div><span>SCROLL</span></div>
+  </section>
 
-    <div id="mobileNav" class="hidden bg-[#06060a] border-t border-white/5">
-      <div class="px-6 py-4 flex flex-col gap-3">
-        <a onclick="openTab('home'); toggleMobile()">Home</a>
-        <a onclick="openTab('services'); toggleMobile()">Services</a>
-        <a onclick="openTab('work'); toggleMobile()">Work</a>
-        <a onclick="openTab('pricing'); toggleMobile()">Pricing</a>
-        <a onclick="openTab('contact'); toggleMobile()">Contact</a>
+  <section id="about">
+    <div class="section-inner about-grid">
+      <div class="fade-up">
+        <div class="section-badge">Why HyperLaunch</div>
+        <h2 class="section-title">Trusted by early-stage teams<br>& creators.</h2>
+        <p class="section-sub" id="testContent">"HyperLaunch took our idea and gave it a product and launch plan in under a week — we hit revenue in days." — NovaFit</p>
+        <div class="mission-card">
+          <div class="label">Launch Essentials</div>
+          <p>Everything you need to go from idea to revenue — no guesswork, no scattered vendors.</p>
+        </div>
+      </div>
+      <div class="pillars fade-up">
+        <div class="pillar"><div class="pillar-mark">→</div><div><h4>Brand &amp; visual system</h4><p>A look and voice that's unmistakably yours, ready to scale across every channel.</p></div></div>
+        <div class="pillar"><div class="pillar-mark">→</div><div><h4>Website &amp; payments</h4><p>A fast, conversion-ready site with checkout wired in from day one.</p></div></div>
+        <div class="pillar"><div class="pillar-mark">→</div><div><h4>Social launch kit</h4><p>Content and assets ready to post the moment you go live.</p></div></div>
+        <div class="pillar"><div class="pillar-mark">→</div><div><h4>Automation &amp; analytics</h4><p>Systems that track what's working so you can grow with data, not guesses.</p></div></div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main class="max-w-6xl mx-auto px-6">
+  <section id="cta-strip">
+    <div class="fade-up">
+      <h2>Ready to build what you imagine?</h2>
+      <p>Tell us about your idea and we'll map out the fastest path to launch.</p>
+      <a href="javascript:void(0)" class="btn-primary" onclick="switchTab('contact')">Start Your Launch</a>
+    </div>
+  </section>
 
-    <!-- HOME -->
-    <section id="home-panel" class="tab-panel active" role="tabpanel" aria-labelledby="home">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center glass p-8 rounded-2xl reveal">
-        <div>
-          <h1 class="text-4xl md:text-6xl font-extrabold neon-head">We Build<br class="hidden md:block"> What You Imagine.</h1>
-          <p class="mt-4 text-slate-300 max-w-xl">HyperLaunch turns ideas into revenue-ready businesses — brand, product, website, and launch strategy — built fast and crafted to scale.</p>
+</div>
 
-          <div class="mt-6 flex gap-4">
-            <button class="neon-btn px-5 py-3 rounded-md" onclick="openTab('contact')">Start Your Launch</button>
-            <button class="btn-ghost px-4 py-3 rounded-md" onclick="openTab('services')">See Services</button>
+<!-- ============================================================
+     SERVICES
+     ============================================================ -->
+<div class="tab-panel" id="tab-services">
+  <section>
+    <div class="section-inner">
+      <div class="section-badge fade-up">What We Do</div>
+      <h2 class="section-title fade-up">Core Services</h2>
+      <p class="section-sub fade-up">HyperLaunch transforms ideas into fully launched brands — from validation to growth. Choose your starting point below.</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2v6M8 5l4-3 4 3M8 22h8" /></svg>
           </div>
-
-          <div class="mt-6 text-sm text-slate-400">Trusted by early-stage teams & creators — Design / Tech / E-commerce.</div>
-
-          <div class="mt-6 bg-black/10 p-4 rounded-lg">
-            <div id="testContent" class="text-slate-200 text-sm">“HyperLaunch took our idea and gave it a product and launch plan in under a week — we hit revenue in days.” — NovaFit</div>
-          </div>
+          <h4>Ignite — Idea Validation</h4>
+          <p>Validate your idea before building. Refine your offer, name, and positioning through guided workshops and quick-launch testing.</p>
+          <a href="javascript:void(0)" class="feature-link" onclick="switchTab('contact')">Talk to us →</a>
         </div>
 
-        <div class="glass p-4 rounded-2xl">
-          <div style="height:320px; overflow:hidden; border-radius:10px;">
-            <img id="heroBanner" src="assets/HyperLaunch square.png" alt="HyperLaunch banner" class="w-full h-full object-cover transition-transform duration-700" />
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12l8-8 8 8M12 4v16" /></svg>
           </div>
-
-          <h3 class="text-xl font-semibold mt-4">Launch Essentials</h3>
-          <ul class="mt-3 space-y-2 text-slate-300 text-sm">
-            <li>✔ Brand & visual system</li>
-            <li>✔ Website & payments</li>
-            <li>✔ Social launch kit</li>
-            <li>✔ Automation & analytics</li>
-          </ul>
+          <h4>Build — Brand &amp; Web</h4>
+          <p>Launch your identity and digital home. We'll design and build a high-performance site that connects all your sales systems.</p>
+          <a href="javascript:void(0)" class="feature-link" onclick="switchTab('contact')">Talk to us →</a>
         </div>
-      </div>
-    </section>
 
-    <!-- SERVICES -->
-    <section id="services-panel" class="tab-panel" role="tabpanel" aria-labelledby="services">
-      <div class="mt-10">
-        <h2 class="text-2xl font-extrabold mb-4 text-white" style="font-family:'Orbitron',sans-serif;">Core Services</h2>
-        <p class="text-slate-300 mb-10 max-w-2xl">HyperLaunch transforms ideas into fully launched brands — from validation to growth. Choose your starting point below.</p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="p-6 rounded-2xl glass transition-all hover:-translate-y-2 hover:shadow-[#7A00FF]/30 hover:shadow-lg">
-            <div class="w-14 h-14 flex items-center justify-center mb-4 mx-auto rounded-xl bg-gradient-to-r from-[#1877F2] to-[#7A00FF]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2v6M8 5l4-3 4 3M8 22h8" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-white text-lg mb-2">Ignite — Idea Validation</h3>
-            <p class="text-slate-300 text-sm leading-relaxed">Validate your idea before building. Refine your offer, name, and positioning through guided workshops and quick-launch testing.</p>
-            <button onclick="openTab('contact')" class="neon-btn px-6 py-3 rounded-md font-semibold mt-4">Talk to us →</button>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z"/></svg>
           </div>
-
-          <div class="p-6 rounded-2xl glass transition-all hover:-translate-y-2 hover:shadow-[#1877F2]/30 hover:shadow-lg">
-            <div class="w-14 h-14 flex items-center justify-center mb-4 mx-auto rounded-xl bg-gradient-to-r from-[#7A00FF] to-[#1877F2]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12l8-8 8 8M12 4v16" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-white text-lg mb-2">Build — Brand & Web</h3>
-            <p class="text-slate-300 text-sm leading-relaxed">Launch your identity and digital home. We’ll design and build a high-performance site that connects all your sales systems.</p>
-            <button onclick="openTab('contact')" class="neon-btn px-6 py-3 rounded-md font-semibold mt-4">Talk to us →</button>
-          </div>
-
-          <div class="p-6 rounded-2xl glass transition-all hover:-translate-y-2 hover:shadow-[#7A00FF]/30 hover:shadow-lg">
-            <div class="w-14 h-14 flex items-center justify-center mb-4 mx-auto rounded-xl bg-gradient-to-r from-[#1877F2] to-[#7A00FF]">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z"/>
-              </svg>
-            </div>
-            <h3 class="font-semibold text-white text-lg mb-2">Launch — Growth & Ads</h3>
-            <p class="text-slate-300 text-sm leading-relaxed">Turn your brand into momentum. We’ll create content, run ads, and help you scale smarter with data-driven strategies.</p>
-            <button onclick="openTab('contact')" class="neon-btn px-6 py-3 rounded-md font-semibold mt-4">Talk to us →</button>
-          </div>
+          <h4>Launch — Growth &amp; Ads</h4>
+          <p>Turn your brand into momentum. We'll create content, run ads, and help you scale smarter with data-driven strategies.</p>
+          <a href="javascript:void(0)" class="feature-link" onclick="switchTab('contact')">Talk to us →</a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
+</div>
 
-    <!-- WORK -->
-    <section id="work-panel" class="tab-panel" role="tabpanel" aria-labelledby="work">
-      <div class="mt-10">
-        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 neon-heading" style="font-family:'Orbitron',sans-serif;">Projects We've Launched 🚀</h2>
-        <p class="text-slate-300 max-w-2xl mb-8">Every brand we launch is built to scale — here’s a look at our latest success stories.</p>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <article class="group relative overflow-hidden rounded-2xl glass p-[1px] bg-gradient-to-r from-[#1877F2]/40 to-[#7A00FF]/40 reveal transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#7A00FF]/25">
-            <div class="relative overflow-hidden rounded-2xl">
-              <img src="assets/r3vival.jpg" alt="Project R3vival" class="w-full h-64 object-cover rounded-2xl transition-transform duration-500 group-hover:scale-105" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end justify-start p-4">
-                <a href="https://r3vival.vercel.app/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gradient-to-r from-[#1877F2] to-[#7A00FF] text-black font-semibold text-sm shadow-md hover:shadow-lg transition-all">Visit Live</a>
-              </div>
-            </div>
-            <div class="p-5">
-              <h3 class="font-semibold text-lg text-white">Project R3vival</h3>
-              <p class="text-slate-300 text-sm mt-2">A modern streetwear brand built from the ground up — full branding, Shopify integration, and digital launch campaign by HyperLaunch.</p>
-              <div class="flex flex-wrap gap-2 mt-3 text-xs text-slate-400">
-                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/10">Branding</span>
-                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/10">E-commerce</span>
-                <span class="px-2 py-1 rounded-md bg-white/5 border border-white/10">Launch Strategy</span>
-              </div>
-            </div>
-          </article>
+<!-- ============================================================
+     WORK
+     ============================================================ -->
+<div class="tab-panel" id="tab-work">
+  <section id="work">
+    <div class="section-inner">
+      <div class="section-badge fade-up">Case Studies</div>
+      <h2 class="section-title fade-up">Projects We've Launched 🚀</h2>
+      <p class="section-sub fade-up">Every brand we launch is built to scale — here's a look at our latest success stories.</p>
 
-          <article class="rounded-2xl glass border border-white/5 p-6 flex flex-col justify-center items-center text-center text-slate-400 reveal hover:border-[#7A00FF]/30 transition">
-            <div class="text-5xl mb-2 opacity-70">🚧</div>
-            <h4 class="font-semibold text-white mb-1">Your Brand Next?</h4>
-            <p class="text-sm">We’re always launching the next big thing — let’s make yours one of them.</p>
-            <button onclick="openTab('contact')" class="mt-4 px-5 py-2 rounded-md neon-btn text-black font-semibold hover:opacity-90 transition">Start Launch</button>
-          </article>
+      <div class="work-grid">
+        <div class="work-card">
+          <div class="work-img">
+            <img src="assets/r3vival.jpg" alt="Project R3vival">
+            <div class="work-overlay"><a href="https://r3vival.vercel.app/" target="_blank" rel="noopener">Visit Live</a></div>
+          </div>
+          <div class="work-body">
+            <h3>Project R3vival</h3>
+            <p>A modern streetwear-meets-faith brand built from the ground up — full branding, e-commerce integration, and digital launch campaign by HyperLaunch.</p>
+            <div class="work-tags">
+              <span class="tag">Branding</span>
+              <span class="tag">E-commerce</span>
+              <span class="tag">Launch Strategy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="work-card placeholder">
+          <div class="ph-icon">🚧</div>
+          <h4 style="font-weight:700;color:var(--white);">Your Brand Next?</h4>
+          <p style="color:var(--muted);font-size:.9rem;">We're always launching the next big thing — let's make yours one of them.</p>
+          <a href="javascript:void(0)" class="btn-primary" style="margin-top:18px;" onclick="switchTab('contact')">Start Launch</a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
+</div>
 
-    <!-- PRICING -->
-    <section id="pricing-panel" class="tab-panel" role="tabpanel" aria-labelledby="pricing">
-      <div class="mt-10">
-        <h2 class="text-2xl font-extrabold mb-6 text-white" style="font-family:'Orbitron',sans-serif;">Packages</h2>
-        <p class="text-slate-300 mb-8 max-w-2xl">Choose your launch package — checkout opens securely in a SellAuth modal without leaving the site.</p>
+<!-- ============================================================
+     PRICING
+     ============================================================ -->
+<div class="tab-panel" id="tab-pricing">
+  <section id="prices">
+    <div class="section-inner">
+      <div class="section-badge fade-up">Packages</div>
+      <h2 class="section-title fade-up">Choose Your Launch Package</h2>
+      <p class="section-sub fade-up">Checkout opens securely in a SellAuth modal without leaving the site.</p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="p-6 rounded-2xl glass text-slate-300 flex flex-col justify-between reveal transition-all duration-300 hover:-translate-y-1 hover:shadow-neon">
+      <div class="price-grid">
+        <div class="price-card">
           <div>
-            <div class="font-semibold text-white text-lg">Starter</div>
-            <div class="text-4xl font-bold mt-3 text-[#00BFFF]">$25</div>
-            <p class="mt-3 text-sm text-slate-400">For creators and solo founders making their first impact.</p>
-            <ul class="mt-4 text-xs text-slate-500 space-y-1">
-              <li>• 1-page responsive website</li>
-              <li>• Logo + color system</li>
-              <li>• 1 revision round</li>
+            <div class="price-name">Starter</div>
+            <div class="price-amount">$25</div>
+            <p class="price-desc">For creators and solo founders making their first impact.</p>
+            <ul class="price-list">
+              <li>1-page responsive website</li>
+              <li>Logo + color system</li>
+              <li>1 revision round</li>
             </ul>
           </div>
-          <div class="mt-6 flex gap-3 flex-wrap">
-            <button type="button" class="sellauth-button inline-flex items-center gap-2 px-6 py-3 rounded-md neon-btn font-semibold" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732624, quantity: 1 }], shopId: 186720 })">Buy Starter</button>
-          </div>
+          <button type="button" class="btn-primary" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732624, quantity: 1 }], shopId: 186720 })">Buy Starter</button>
         </div>
 
-        <div class="p-6 rounded-2xl bg-gradient-to-r from-[#1877F2] to-[#7A00FF] text-white flex flex-col justify-between reveal shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#7A00FF]/40">
+        <div class="price-card featured">
           <div>
-            <div class="font-semibold text-white text-lg">Growth</div>
-            <div class="text-4xl font-bold mt-3">$50</div>
-            <p class="mt-3 text-sm text-white/90">For startups and small brands ready to scale their online presence.</p>
-            <ul class="mt-4 text-xs text-white/80 space-y-1">
-              <li>• Everything in Starter</li>
-              <li>• 3-page responsive website</li>
-              <li>• Social media launch pack</li>
-              <li>• Basic automations & analytics</li>
+            <div class="price-name">Growth <span class="badge-best">Most Popular</span></div>
+            <div class="price-amount">$50</div>
+            <p class="price-desc">For startups and small brands ready to scale their online presence.</p>
+            <ul class="price-list">
+              <li>Everything in Starter</li>
+              <li>3-page responsive website</li>
+              <li>Social media launch pack</li>
+              <li>Basic automations &amp; analytics</li>
             </ul>
           </div>
-          <div class="mt-6 flex gap-3 flex-wrap">
-            <button type="button" class="sellauth-button inline-flex items-center gap-2 px-6 py-3 rounded-md bg-black/80 text-white font-semibold hover:bg-black transition" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732625, quantity: 1 }], shopId: 186720 })">Buy Growth</button>
-          </div>
+          <button type="button" class="btn-primary" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732625, quantity: 1 }], shopId: 186720 })">Buy Growth</button>
         </div>
 
-        <div class="p-6 rounded-2xl glass text-slate-300 flex flex-col justify-between reveal transition-all duration-300 hover:-translate-y-1 hover:shadow-neon">
+        <div class="price-card">
           <div>
-            <div class="font-semibold text-white text-lg">LiftOff Pro</div>
-            <div class="text-4xl font-bold mt-3 text-[#B388FF]">$75</div>
-            <p class="mt-3 text-sm text-slate-400">For brands ready to dominate their niche with automation & growth systems.</p>
-            <ul class="mt-4 text-xs text-slate-500 space-y-1">
-              <li>• Everything in Growth</li>
-              <li>• Funnel + CRM automation</li>
-              <li>• 30 days of performance tracking</li>
+            <div class="price-name">LiftOff Pro</div>
+            <div class="price-amount">$75</div>
+            <p class="price-desc">For brands ready to dominate their niche with automation &amp; growth systems.</p>
+            <ul class="price-list">
+              <li>Everything in Growth</li>
+              <li>Funnel + CRM automation</li>
+              <li>30 days of performance tracking</li>
             </ul>
           </div>
-          <div class="mt-6 flex gap-3 flex-wrap">
-            <button type="button" class="sellauth-button inline-flex items-center gap-2 px-6 py-3 rounded-md neon-btn font-semibold" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732626, quantity: 1 }], shopId: 186720 })">Buy LiftOff Pro</button>
-          </div>
+          <button type="button" class="btn-primary" onclick="sellAuthCheckout({ cart: [{ productId: 495027, variantId: 732626, quantity: 1 }], shopId: 186720 })">Buy LiftOff Pro</button>
         </div>
       </div>
 
-      <div class="mt-10 border-t border-slate-800 pt-6 text-center">
-        <p class="text-slate-400 text-sm">✨ All packages include hosting setup, domain linking, and a 30-minute strategy call.</p>
+      <p class="center" style="margin-top:40px;color:var(--muted);font-size:.9rem;">✨ All packages include hosting setup, domain linking, and a 30-minute strategy call.</p>
+
+      <div class="center fade-up" style="margin-top:50px;">
+        <p style="color:var(--muted);margin-bottom:14px;">Need something custom?</p>
+        <a href="javascript:void(0)" class="btn-primary" onclick="switchTab('contact')">Get a Custom Quote →</a>
       </div>
+    </div>
+  </section>
+</div>
 
-      <div class="text-center mt-12 reveal">
-        <p class="text-slate-400 mb-3">Need something custom?</p>
-        <button onclick="openTab('contact')" class="neon-btn px-6 py-3 rounded-md font-semibold">Get a Custom Quote →</button>
-      </div>
-    </section>
+<!-- ============================================================
+     CONTACT (AI Intake)
+     ============================================================ -->
+<div class="tab-panel" id="tab-contact">
+  <section id="contact">
+    <div class="section-inner">
+      <div class="section-badge fade-up">Let's Talk</div>
+      <h2 class="section-title fade-up">Let's Build Your Launch 🚀</h2>
+      <p class="section-sub fade-up">Tell us about your idea — our AI assistant will ask the right questions and submit a complete project summary to HyperLaunch when you're ready.</p>
 
-    <!-- CONTACT: centered glass chat card (only AI) -->
-    <section id="contact-panel" class="tab-panel" role="tabpanel" aria-labelledby="contact">
-      <div class="mt-10 reveal">
-        <h2 class="text-3xl md:text-4xl font-extrabold mb-4 neon-heading" style="font-family:'Orbitron',sans-serif;">
-          Let’s Build Your Launch 🚀
-        </h2>
-        <p class="text-slate-300 max-w-2xl mb-8">Tell us about your idea — our AI assistant will ask the right questions and submit a complete project summary to HyperLaunch when you're ready.</p>
-
-        <div class="glass chat-card p-0">
-          <div class="chat-header bg-[#07070b]/60 glass p-0" style="border-bottom:1px solid rgba(255,255,255,0.03);">
-            <div style="padding:16px 20px; display:flex; align-items:center; gap:12px;">
-              <img src="assets/HyperLaunch_Logo-removebg-preview.png" alt="logo" class="w-10 h-10 rounded-md" />
-              <div>
-                <div class="title">HyperLaunch Assistant</div>
-                <div class="text-slate-400 text-xs">AI intake & project planning — I’ll guide you step-by-step.</div>
-              </div>
-            </div>
+      <div class="chat-card fade-up">
+        <div class="chat-header">
+          <img src="assets/HyperLaunch_Logo-removebg-preview.png" alt="logo">
+          <div>
+            <div class="title">HyperLaunch Assistant</div>
+            <div style="color:var(--muted);font-size:.78rem;">AI intake &amp; project planning — I'll guide you step-by-step.</div>
           </div>
-
-          <div id="chatBody" class="chat-body bg-[#0b0b12]/80 p-4">
-            <!-- messages appear here -->
-          </div>
-
-          <form id="chatControls" class="chat-input bg-[#06060a]/70 p-4">
-            <input id="chatInput" type="text" placeholder="Describe your project or say 'start'..." class="flex-1 rounded-md p-3 bg-white/5 border border-white/8 text-slate-200" />
-            <button id="chatSend" type="submit" class="neon-btn px-4 py-2 rounded-md">Send</button>
-            <button id="chatReset" type="button" class="btn-ghost px-3 py-2 rounded-md">Reset</button>
-          </form>
         </div>
 
-        <div class="text-center mt-6 text-slate-400 text-sm">After the AI collects your info it will summarize and ask to send — one click will submit the request to HyperLaunch.</div>
+        <div id="chatBody" class="chat-body"></div>
 
-        <div id="finalSummary" class="mt-6 hidden max-w-3xl mx-auto">
-          <h4 class="font-semibold text-white mb-2">Project summary</h4>
-          <div id="summaryBlock" class="summary-block"></div>
-        </div>
+        <form id="chatControls" class="chat-input">
+          <input id="chatInput" type="text" placeholder="Describe your project or say 'start'...">
+          <button id="chatSend" type="submit" class="send">Send</button>
+          <button id="chatReset" type="button" class="btn-secondary" style="padding:13px 20px;">Reset</button>
+        </form>
       </div>
-    </section>
 
-  </main>
+      <p class="center" style="margin-top:24px;color:var(--muted);font-size:.9rem;">After the AI collects your info it will summarize and ask to send — one click will submit the request to HyperLaunch.</p>
 
-  <!-- Hidden form for sending to Formspree (contact AI will populate and submit this) -->
-  <form id="hiddenContactForm" action="https://formspree.io/f/xnngoodr" method="POST" style="display:none;">
-    <input type="hidden" name="_subject" id="form_subject" value="HyperLaunch Consult Request" />
-    <input type="hidden" name="ai_summary" id="hidden_ai_summary" value="" />
-    <input type="hidden" name="project" id="hidden_project" value="" />
-    <input type="hidden" name="name" id="hidden_name" value="" />
-    <input type="hidden" name="email" id="hidden_email" value="" />
-    <input type="hidden" name="prompt" id="hidden_prompt" value="" />
-  </form>
+      <div id="finalSummary" class="hidden">
+        <h4 class="center" style="margin-top:20px;font-weight:700;">Project summary</h4>
+        <div id="summaryBlock" class="summary-block"></div>
+      </div>
 
-  <!-- CORE SCRIPTS -->
-  <script>
-  const TAB_IDS = ['home','services','work','pricing','contact'];
-  function openTab(name){
-    TAB_IDS.forEach(id => {
-      const panel = document.getElementById(id + '-panel');
-      if(!panel) return;
-      if(id === name){
-        panel.classList.add('active');
-        panel.style.display = 'block';
-        setTimeout(()=> {
-          panel.querySelectorAll('.reveal').forEach((el,i)=>{
-            setTimeout(()=> el.classList.add('show'), 80 + i*28);
-          });
-        }, 30);
-      } else {
-        panel.classList.remove('active');
-        panel.style.display = 'none';
-      }
-    });
-    document.querySelectorAll('.tab-link').forEach(link=>{
-      link.setAttribute('aria-selected', link.textContent.trim().toLowerCase() === name);
-    });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  function toggleMobile(){ document.getElementById('mobileNav')?.classList.toggle('hidden'); }
-  function initialReveal(){ document.querySelectorAll('.reveal').forEach((el, i) => { setTimeout(()=> el.classList.add('show'), 120 + i*30); }); }
-  function rotateTestimonials(){ const testimonials = ['“HyperLaunch shipped our site and first launch in under a week — immediate traction.” — NovaFit','“They converted our idea to revenue in days.” — CreatorWorks','“Fast, honest, great design.” — DripCommerce']; let idx=0; const el=document.getElementById('testContent'); if(!el) return; setInterval(()=>{ el.style.opacity=0; setTimeout(()=>{ el.textContent=testimonials[idx]; el.style.opacity=1; idx=(idx+1)%testimonials.length; },300); },6500); }
-  window.addEventListener('load', ()=> { initialReveal(); rotateTestimonials(); if(window.gsap){ try{ gsap.to('#heroBanner', {y:-6, duration:6, yoyo:true, repeat:-1, ease:'sine.inOut'}); }catch(e){} } });
-  </script>
+      <div class="contact-direct">Prefer email? Reach us directly at <a href="mailto:hyp3rlaunch@gmail.com">hyp3rlaunch@gmail.com</a></div>
+    </div>
+  </section>
+</div>
 
-  <!-- SellAuth helpers preserved -->
-  <script>
-    const SELL_PRODUCT = 495027;
-    const SELL_SHOP = 91082;
-    const VARIANTS = { 'Starter': 732624, 'Growth': 732625, 'LiftOff Pro': 732626 };
-    function sellAuthCheckout(opts){
-      try {
-        if(window.sellAuthEmbed && typeof window.sellAuthEmbed.checkout === 'function'){
-          window.sellAuthEmbed.checkout(document.body, {
-            cart: opts.cart,
-            shopId: opts.shopId || SELL_SHOP,
-            modal: true,
-            scrollTop: true
-          });
-          return;
-        }
-      } catch(err){ console.warn('SellAuth embed failed:', err); }
-      const item = opts.cart?.[0];
-      const variantQuery = item ? `?variant=${encodeURIComponent(item.variantId || '')}` : '';
-      const fallback = `https://hyperlaunch.mysellauth.com/product/hyperlaunch-packages${variantQuery}`;
-      window.open(fallback, '_blank', 'noopener,noreferrer');
-    }
-    function openSellAuthByLabel(label){
-      const variantId = VARIANTS[label] || (label === 'LiftOff Pro' ? VARIANTS['LiftOff Pro'] : null);
-      if(!variantId) return sellAuthCheckout({ cart: [{ productId: SELL_PRODUCT, variantId: '', quantity: 1 }] });
-      sellAuthCheckout({ cart: [{ productId: SELL_PRODUCT, variantId, quantity: 1 }], shopId: SELL_SHOP });
-    }
-  </script>
+</main>
 
-  <!-- CONTACT AI: single AI intake assistant that generates & submits AI-ready prompt -->
-  <script>
-  (function contactAI(){
-    const chatBody = document.getElementById('chatBody');
-    const chatForm = document.getElementById('chatControls');
-    const chatInput = document.getElementById('chatInput');
-    const hiddenForm = document.getElementById('hiddenContactForm');
-    const hidden_ai = document.getElementById('hidden_ai_summary');
-    const hidden_project = document.getElementById('hidden_project');
-    const hidden_name = document.getElementById('hidden_name');
-    const hidden_email = document.getElementById('hidden_email');
-    const hidden_prompt = document.getElementById('hidden_prompt');
-    const finalSummary = document.getElementById('finalSummary');
-    const summaryBlock = document.getElementById('summaryBlock');
-    const formSubject = document.getElementById('form_subject');
+<!-- Hidden form for sending to Formspree (contact AI populates and submits this) -->
+<form id="hiddenContactForm" action="https://formspree.io/f/xnngoodr" method="POST" style="display:none;">
+  <input type="hidden" name="_subject" id="form_subject" value="HyperLaunch Consult Request">
+  <input type="hidden" name="ai_summary" id="hidden_ai_summary" value="">
+  <input type="hidden" name="project" id="hidden_project" value="">
+  <input type="hidden" name="name" id="hidden_name" value="">
+  <input type="hidden" name="email" id="hidden_email" value="">
+  <input type="hidden" name="prompt" id="hidden_prompt" value="">
+</form>
 
-    let history = [];
-    let thinkingEl = null;
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="assets/HyperLaunch_Logo-removebg-preview.png" alt="HyperLaunch logo">
+      <span>HyperLaunch</span>
+    </div>
+    <div class="footer-links">
+      <a href="javascript:void(0)" onclick="switchTab('services')">Services</a>
+      <a href="javascript:void(0)" onclick="switchTab('work')">Work</a>
+      <a href="javascript:void(0)" onclick="switchTab('pricing')">Pricing</a>
+      <a href="mailto:hyp3rlaunch@gmail.com">Email</a>
+    </div>
+    <div class="footer-tagline">We Build What You Imagine.</div>
+    <div class="footer-copy">© 2026 HyperLaunch. All rights reserved.</div>
+  </div>
+</footer>
 
-    function elMsg(text, who='ai', delay=60, allowHtml=false){
-      const d = document.createElement('div');
-      d.className = 'msg ' + (who==='ai' ? 'ai' : 'user');
-      if(allowHtml) d.innerHTML = text; else d.textContent = text;
-      chatBody.appendChild(d);
-      setTimeout(()=> d.classList.add('show'), delay);
-      chatBody.scrollTop = chatBody.scrollHeight;
-      return d;
-    }
-
-    function showTyping(){
-      thinkingEl = document.createElement('div');
-      thinkingEl.className = 'typing';
-      thinkingEl.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-      chatBody.appendChild(thinkingEl);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-    function hideTyping(){ if(thinkingEl){ thinkingEl.remove(); thinkingEl = null; } }
-
-    async function callBackend(message){
-      history.push({ role:'user', content: message });
-      try {
-        showTyping();
-        const res = await fetch('/api/ai-intake', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body: JSON.stringify({ message, history, service: 'Contact' })
-        });
-        const json = await res.json();
-        hideTyping();
-        const reply = json.reply || json.summary || '⚠️ AI returned no reply.';
-        history.push({ role:'assistant', content: reply });
-        return { reply: reply, summary: json.summary || '' };
-      } catch(err){
-        hideTyping();
-        console.error('AI error', err);
-        return { reply: '⚠️ AI unavailable. Please try again later.', summary: '' };
-      }
-    }
-
-    // initial greeting
-    function initialGreeting(){
-      elMsg("Hey! I’m HyperLaunch Assistant — ready to help plan your dream launch. Shall we begin?", 'ai', 120);
-    }
-
-    // parse summary (returns object with fields if found)
-    function parseSummary(text){
-      const out = {};
-      const extract = (label)=>{
-        const re = new RegExp(label + '[:\\-\\s]*([^\\n\\r]+)', 'i');
-        const m = text.match(re);
-        return m ? m[1].trim() : '';
-      };
-      out.name = extract('Name');
-      out.email = extract('Email');
-      out.brand = extract('Brand');
-      out.audience = extract('Audience');
-      out.goals = extract('Goals');
-      out.pages = extract('Pages/Features|Pages');
-      out.style = extract('Visual Style');
-      out.timeline = extract('Timeline');
-      out.package = extract('Package');
-      out.extra = extract('Extra Notes|Notes');
-      return out;
-    }
-
-    // build AI-ready prompt from parsed data
-    function buildAIPrompt(parsed){
-      const lines = [];
-      lines.push(`Create a website for "${parsed.brand || '[Brand Name]'}", targeting ${parsed.audience || '[Target Audience]'}.`);
-      lines.push(`Main goals: ${parsed.goals || '[Goals]'}.`);
-      lines.push(`Pages/features needed: ${parsed.pages || '[Pages/Features]'}.`);
-      lines.push(`Visual style: ${parsed.style || '[Visual Style]'}.`);
-      lines.push(`Timeline: ${parsed.timeline || '[Timeline]'}.`);
-      lines.push(`Package: ${parsed.package || '[Not specified]'}.`);
-      if(parsed.extra) lines.push(`Extra notes: ${parsed.extra}.`);
-      // condensed instruction prompt
-      const prompt = `AI WEB BUILD PROMPT:\n${lines.join(' ')}\n\nPlease output: 1) A short homepage brief (2-3 sentences), 2) A list of pages and their purpose, 3) Primary CTA and form behaviors, 4) Suggested tech stack.`;
-      return prompt;
-    }
-
-    // when AI returns a summary, show it and prepare the prompt + hidden form fields
-    function handleFinalSummary(aiReply, summaryText){
-      // use summaryText if provided, else aiReply
-      const full = summaryText && summaryText.length ? summaryText : aiReply;
-      // show final summary block
-      finalSummary.classList.remove('hidden');
-      summaryBlock.textContent = full;
-      hidden_ai.value = full;
-      hidden_project.value = full;
-      // extract name/email for subject and fields
-      const parsed = parseSummary(full);
-      hidden_name.value = parsed.name || '';
-      hidden_email.value = parsed.email || '';
-      // build prompt for builder AI
-      const prompt = buildAIPrompt(parsed);
-      hidden_prompt.value = prompt;
-      // build subject including name+email if available
-      const subParts = [];
-      if(parsed.name) subParts.push(parsed.name);
-      if(parsed.email) subParts.push(`(${parsed.email})`);
-      const subject = subParts.length ? `🚀 New Project from ${subParts.join(' ')}` : '🚀 New Project Request';
-      formSubject.value = subject;
-    }
-
-    // submit to Formspree (uses hidden form)
-    async function submitToFormspree(){
-      try {
-        const fd = new FormData(hiddenForm);
-        // Use fetch to send and handle response
-        await fetch(hiddenForm.action, { method:'POST', body: fd, headers:{ Accept: 'application/json' } });
-        elMsg('🎉 Done — your project was sent to HyperLaunch. We’ll be in touch within 48 hours.', 'ai', 80);
-      } catch(err){
-        console.error('Formspree submit failed', err);
-        alert('Submission failed — please email hyp3rlaunch@gmail.com');
-      }
-    }
-
-    // UI: when AI ends conversation and asks to send, provide a send button inline
-    function checkForSendOffer(aiText, summary){
-      if(/would you like me to send this project request to hyperlaunch/i.test(aiText) || /here.?s your project summary/i.test(aiText) || summary.length>60){
-        // prepare final summary and prompt
-        handleFinalSummary(aiText, summary);
-        // create inline send CTA in chat
-        const wrap = document.createElement('div');
-        wrap.style.marginTop = '8px';
-        const sendBtn = document.createElement('button');
-        sendBtn.className = 'neon-btn px-4 py-2 rounded-md';
-        sendBtn.textContent = 'Send to HyperLaunch 🚀';
-        sendBtn.onclick = async () => {
-          sendBtn.disabled = true;
-          sendBtn.textContent = 'Sending...';
-          await submitToFormspree();
-          sendBtn.textContent = 'Sent — thank you!';
-        };
-        wrap.appendChild(sendBtn);
-        chatBody.appendChild(wrap);
-        chatBody.scrollTop = chatBody.scrollHeight;
-      }
-    }
-
-    // wire form submit to send message to backend
-    chatForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const text = (chatInput.value || '').trim();
-      if(!text) return;
-      elMsg(text, 'user', 20);
-      chatInput.value = '';
-      const { reply, summary } = await callBackend(text);
-      elMsg(reply, 'ai', 80, true);
-      // if summary exists or reply indicates final, offer send
-      checkForSendOffer(reply, summary || '');
-    });
-
-    document.getElementById('chatReset').addEventListener('click', ()=>{
-      history = [];
-      chatBody.innerHTML = '';
-      finalSummary.classList.add('hidden');
-      summaryBlock.textContent = '';
-      initialGreeting();
-    });
-
-    // initial greeting
-    initialGreeting();
-  })();
-  </script>
-
+<script src="script.js"></script>
 </body>
 </html>
-
-
